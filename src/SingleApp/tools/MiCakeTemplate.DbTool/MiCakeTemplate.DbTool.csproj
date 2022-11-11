@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MiCakeTemplate.EFCore\MiCakeTemplate.EFCore.csproj" />
+    <ProjectReference Include="..\..\src\MiCakeTemplate.EFCore\MiCakeTemplate.EFCore.csproj" />
   </ItemGroup>
 
 </Project>
