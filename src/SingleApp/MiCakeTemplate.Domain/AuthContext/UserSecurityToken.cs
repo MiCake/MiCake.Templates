@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MiCakeTemplate.Domain.AuthContext
+﻿namespace MiCakeTemplate.Domain.AuthContext
 {
     public class UserSecurityToken : AuditTimeEntity
     {

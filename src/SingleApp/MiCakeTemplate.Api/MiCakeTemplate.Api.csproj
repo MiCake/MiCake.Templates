@@ -17,8 +17,4 @@
     <ProjectReference Include="..\MiCakeTemplate.EFCore\MiCakeTemplate.EFCore.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Constants\" />
-  </ItemGroup>
-
 </Project>

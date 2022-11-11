@@ -2,11 +2,6 @@
 using MiCake.Identity;
 using MiCake.Identity.Authentication;
 using MiCake.Identity.Authentication.JwtToken;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * Tips: This folder is used to store some common base classes

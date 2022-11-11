@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MiCakeTemplate.Domain.TodoContext
+﻿namespace MiCakeTemplate.Domain.TodoContext
 {
     public class TodoItem : AuditTimeAggregateRoot
     {

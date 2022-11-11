@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-/*
- * Tips: This folder is used to store some common base classes
- */
-
-namespace MiCakeTemplate.Domain
+﻿namespace MiCakeTemplate.Util.Common
 {
     /// <summary>
     /// Represent a defined error.

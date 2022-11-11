@@ -1,13 +1,9 @@
 ﻿using MiCakeTemplate.Domain.AuthContext.Enums;
 using MiCakeTemplate.Domain.AuthContext.ErrorConstants;
 using MiCakeTemplate.Domain.Constants;
+using MiCakeTemplate.Util.Common;
 using MiCakeTemplate.Util.Cryptography;
 using MiCakeTemplate.Util.Validation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MiCakeTemplate.Domain.AuthContext
 {

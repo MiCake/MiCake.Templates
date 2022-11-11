@@ -14,7 +14,7 @@ namespace MiCakeTemplate.Util.Cryptography
         {
             using var sha256 = SHA256.Create();
             var bytes = Encoding.UTF8.GetBytes(encryStr);
-            
+
             return Convert.ToBase64String(sha256.ComputeHash(bytes));
         }
     }
