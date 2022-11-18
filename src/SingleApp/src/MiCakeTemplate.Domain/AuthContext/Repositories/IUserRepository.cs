@@ -2,7 +2,7 @@
 
 namespace MiCakeTemplate.Domain.AuthContext.Repositories
 {
-    public interface IUserRepo : IRepository<User, int>
+    public interface IUserRepository : IRepository<User, int>
     {
         Task<User?> GetByEmail(string email, CancellationToken cancellationToken = default);
 

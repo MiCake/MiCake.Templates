@@ -2,7 +2,7 @@
 
 namespace MiCakeTemplate.Domain.TodoContext.Repositories
 {
-    public interface ITodoItemRepo : IPaginationRepository<TodoItem, int>
+    public interface ITodoItemRepository : IPaginationRepository<TodoItem, int>
     {
     }
 }

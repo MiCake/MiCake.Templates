@@ -9,8 +9,6 @@ namespace MiCakeTemplate.Domain.AuthContext
 {
     public class User : AppUser<int>
     {
-        public Guid UniqueId { get; protected set; }
-
         public string? UserName { get; protected set; }
 
         public string? Password { get; protected set; }
@@ -34,7 +32,6 @@ namespace MiCakeTemplate.Domain.AuthContext
 
             return new User()
             {
-                UniqueId = Guid.NewGuid(),
                 UserName = userName,
                 Password = EncryptPwd(password),
             };
@@ -50,7 +47,6 @@ namespace MiCakeTemplate.Domain.AuthContext
 
             var user = new User()
             {
-                UniqueId = Guid.NewGuid(),
                 Password = EncryptPwd(password),
             };
 
@@ -74,7 +70,6 @@ namespace MiCakeTemplate.Domain.AuthContext
 
             var user = new User()
             {
-                UniqueId = Guid.NewGuid(),
                 Password = EncryptPwd(password),
             };
 
@@ -246,10 +241,7 @@ namespace MiCakeTemplate.Domain.AuthContext
         }
 
         /// <summary>
-        /// 验证用户名格式
-        /// <para>
-        ///     用户名只能包含字母、数字、下划线，长度在3-20之间
-        /// </para>
+        /// verify user_name format
         /// </summary>
         /// <param name="userName"></param>
         private static void CheckUserNameFormat(string userName)

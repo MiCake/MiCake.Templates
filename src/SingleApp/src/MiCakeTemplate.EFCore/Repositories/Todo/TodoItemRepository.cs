@@ -4,9 +4,9 @@ using MiCakeTemplate.Domain.TodoContext.Repositories;
 
 namespace MiCakeTemplate.EFCore.Repositories.Todo
 {
-    internal class TodoItemRepo : EFPaginationRepository<AppDbContext, TodoItem, int>, ITodoItemRepo
+    internal class TodoItemRepository : EFPaginationRepository<AppDbContext, TodoItem, int>, ITodoItemRepository
     {
-        public TodoItemRepo(IServiceProvider serviceProvider) : base(serviceProvider)
+        public TodoItemRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
     }

@@ -22,7 +22,7 @@ namespace MiCakeTemplate.Api
             // Add JWT authentication 
             var jwtSecurityKey = configuration["JwtSetting:SecurityKey"];
             var jwtTokenLifetime = configuration.GetSection("JwtSetting:AccessTokenLifetime").Get<int>();
-            var jwtIssuer = $"{nameof(MiCakeTemplate)}.API";
+            string jwtIssuer = $"{nameof(MiCakeTemplate)}.API", audience = $"{nameof(MiCakeTemplate)}.API";
 
             if (string.IsNullOrWhiteSpace(jwtSecurityKey) || jwtTokenLifetime <= 0)
             {
@@ -37,18 +37,18 @@ namespace MiCakeTemplate.Api
                             ValidateAudience = true,
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(jwtSecurityKey)),
                             ValidIssuer = jwtIssuer,
-                            ValidAudience = jwtIssuer,
+                            ValidAudience = audience,
                         };
                     });
 
             // Add MiCake
-            services.AddMiCakeServices<MiCakeTemplateModule, AppDbContext>()
+            services.AddMiCakeServices<WebAppModule, AppDbContext>()
                     .UseIdentity<int>()
-                    .UseJwt(options =>
+                    .UseJwt(options =>              // if you don't want to use jwt which created by MiCake, you can remove this method.
                     {
                         options.AccessTokenLifetime = (uint)jwtTokenLifetime;
                         options.Issuer = jwtIssuer;
-                        options.Audience = jwtIssuer;
+                        options.Audience = audience;
                         options.IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(jwtSecurityKey));
                         options.RefreshTokenMode = RefreshTokenUsageMode.Recreate;
                         options.DeleteRefreshTokenWhenExchange = true;

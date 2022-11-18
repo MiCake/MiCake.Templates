@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MiCakeTemplate.EFCore.Repositories.Auth
 {
-    internal class UserRepo : EFRepository<AppDbContext, User, int>, IUserRepo
+    internal class UserRepository : EFRepository<AppDbContext, User, int>, IUserRepository
     {
-        public UserRepo(IServiceProvider serviceProvider) : base(serviceProvider)
+        public UserRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 

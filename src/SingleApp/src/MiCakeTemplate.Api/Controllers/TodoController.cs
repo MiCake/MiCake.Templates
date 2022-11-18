@@ -11,9 +11,9 @@ namespace MiCakeTemplate.Api.Controllers
     [Route("[controller]")]
     public class TodoController : AppControllerBase<TodoController>
     {
-        private readonly ITodoItemRepo _repo;
+        private readonly ITodoItemRepository _repo;
 
-        public TodoController(ITodoItemRepo repo, ControllerInfrastructures infrastructures, ILoggerFactory loggerFactory) : base(infrastructures, loggerFactory)
+        public TodoController(ITodoItemRepository repo, ControllerInfrastructures infrastructures, ILoggerFactory loggerFactory) : base(infrastructures, loggerFactory)
         {
             _repo = repo;
         }

@@ -5,7 +5,7 @@ using MiCakeTemplate.EFCore;
 namespace MiCakeTemplate.Api
 {
     [RelyOn(typeof(AppEFCoreModule))]
-    public class MiCakeTemplateModule : MiCakeStartModule
+    public class WebAppModule : MiCakeStartModule
     {
     }
 }
