@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using MiCakeTemplate.Api.DtoModels.Todo;
+using MiCakeTemplate.Api.DtoModels.TodoContext;
 using MiCakeTemplate.Domain.TodoContext;
 
 namespace MiCakeTemplate.Api.DtoModels.Mapper

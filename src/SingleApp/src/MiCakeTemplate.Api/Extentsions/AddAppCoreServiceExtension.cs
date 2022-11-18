@@ -1,4 +1,6 @@
-﻿using MiCake;
+﻿using FluentValidation.AspNetCore;
+using FluentValidation;
+using MiCake;
 using MiCake.AspNetCore.Identity;
 using MiCake.Identity.Authentication.JwtToken;
 using MiCakeTemplate.EFCore;
@@ -13,6 +15,11 @@ namespace MiCakeTemplate.Api
     {
         public static IServiceCollection AddAppCoreService(this IServiceCollection services, IConfiguration configuration)
         {
+            // Add FluentValidation, use it to validate dto models.
+            // see https://docs.fluentvalidation.net/en/latest/aspnet.html#getting-started
+            services.AddFluentValidationAutoValidation();
+            services.AddValidatorsFromAssemblyContaining<Program>();
+
             // Add EFCore
             services.AddDbContext<AppDbContext>(options =>
             {

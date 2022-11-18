@@ -1,7 +1,8 @@
-﻿using MiCakeTemplate.Util.Common;
-
-namespace MiCakeTemplate.Domain.Constants
+﻿namespace MiCakeTemplate.Util.Common.Constants
 {
+    /*
+     * You can put your common error codes here. all project can use these error codes.
+     */
     public static class CommonErrorCodes
     {
         public static readonly ErrorDefinition PHONE_FORMAT_ERROR = new("901", "手机号错误");

@@ -1,6 +1,6 @@
 ﻿using MiCake.AspNetCore.DataWrapper;
 using MiCake.Cord.Paging;
-using MiCakeTemplate.Api.DtoModels.Todo;
+using MiCakeTemplate.Api.DtoModels.TodoContext;
 using MiCakeTemplate.Domain.TodoContext;
 using MiCakeTemplate.Domain.TodoContext.Repositories;
 using Microsoft.AspNetCore.Mvc;

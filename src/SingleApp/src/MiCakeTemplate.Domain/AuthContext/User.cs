@@ -1,7 +1,7 @@
 ﻿using MiCakeTemplate.Domain.AuthContext.Enums;
 using MiCakeTemplate.Domain.AuthContext.ErrorConstants;
-using MiCakeTemplate.Domain.Constants;
 using MiCakeTemplate.Util.Common;
+using MiCakeTemplate.Util.Common.Constants;
 using MiCakeTemplate.Util.Cryptography;
 using MiCakeTemplate.Util.Validation;
 

@@ -1,4 +1,4 @@
-﻿namespace MiCakeTemplate.Api.DtoModels.Todo
+﻿namespace MiCakeTemplate.Api.DtoModels.TodoContext
 {
     public class TodoItemDto
     {
