@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
-    <PackageReference Include="MiCake.AspNetCore.Start" Version="0.7.0-CI-20221118-072956" />
+    <PackageReference Include="MiCake.AspNetCore.Start" Version="0.7.0-CI-20221121-094717" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

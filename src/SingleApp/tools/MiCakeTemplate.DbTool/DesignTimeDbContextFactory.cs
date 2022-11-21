@@ -11,13 +11,16 @@ namespace MiCakeTemplate.DbTool
     {
         public AppDbContext CreateDbContext(string[] args)
         {
+            /* For example:
+             * var testConStr = "Data Source=127.0.0.1,14330;Initial Catalog=TemplateDB;Integrated Security=False;User Id=sa;Password=asd12345!;MultipleActiveResultSets=True;TrustServerCertificate=True;";
+             */
             var testConStr = "< your db connection string is here >";
 
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(testConStr, x => x.MigrationsAssembly(typeof(DesignTimeDbContextFactory).Assembly.FullName));
+                options.UseSqlServer(testConStr, x => x.MigrationsAssembly(typeof(DesignTimeDbContextFactory).Assembly.FullName));
             });
             // Add MiCake
             services.AddMiCakeServices<EmptyMiCakeModule, AppDbContext>().Build();

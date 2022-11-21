@@ -23,7 +23,7 @@ namespace MiCakeTemplate.Api
             // Add EFCore
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("Postgres"));
+                options.UseSqlServer(configuration.GetConnectionString("SqlServer"));
             });
 
             // Add JWT authentication 
