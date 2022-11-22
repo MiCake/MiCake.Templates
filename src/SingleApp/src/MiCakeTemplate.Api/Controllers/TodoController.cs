@@ -25,7 +25,7 @@ namespace MiCakeTemplate.Api.Controllers
             var result = TodoItem.Create(item.Title!, item.Content);
             var record = await _repo.AddAndReturnAsync(result);
 
-            return Ok(Mapper.Map<TodoItemDto>(record));
+            return Ok(Mapper.Map<TodoItemDto>(record!));
         }
 
         [HttpGet("/{id:int}")]

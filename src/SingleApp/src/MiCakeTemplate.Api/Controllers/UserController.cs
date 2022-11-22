@@ -36,7 +36,7 @@ namespace MiCakeTemplate.Api.Controllers
 
             if (user is null)
             {
-                return NotFound(UserErrorCodes.NOFOUND_USER);
+                return BadRequest(UserErrorCodes.NOFOUND_USER);
             }
 
             var (result, error) = user.LoginByPassword(data.Password!);
