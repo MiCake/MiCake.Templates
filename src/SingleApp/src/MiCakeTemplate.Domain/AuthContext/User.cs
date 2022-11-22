@@ -1,4 +1,5 @@
-﻿using MiCakeTemplate.Domain.AuthContext.Enums;
+﻿using MiCake.Audit;
+using MiCakeTemplate.Domain.AuthContext.Enums;
 using MiCakeTemplate.Domain.AuthContext.ErrorConstants;
 using MiCakeTemplate.Util.Common;
 using MiCakeTemplate.Util.Common.Constants;
@@ -7,7 +8,7 @@ using MiCakeTemplate.Util.Validation;
 
 namespace MiCakeTemplate.Domain.AuthContext
 {
-    public class User : AppUser<int>
+    public class User : AppUser<int>, IHasCreatedTime
     {
         public string? UserName { get; protected set; }
 
@@ -24,6 +25,8 @@ namespace MiCakeTemplate.Domain.AuthContext
         public UserSecurityToken? UserToken { get; protected set; }
 
         public List<UserIdentification> UserIdentifications { get; protected set; } = new();
+
+        public DateTime CreatedTime { get; protected set; }
 
         public static User Create(string userName, string password)
         {
