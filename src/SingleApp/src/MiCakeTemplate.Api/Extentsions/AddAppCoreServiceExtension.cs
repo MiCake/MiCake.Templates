@@ -1,5 +1,5 @@
-﻿using FluentValidation.AspNetCore;
-using FluentValidation;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
 using MiCake;
 using MiCake.AspNetCore.Identity;
 using MiCake.Identity.Authentication.JwtToken;

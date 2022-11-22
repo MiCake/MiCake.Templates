@@ -1,4 +1,5 @@
 ﻿using MiCakeTemplate.Domain.AuthContext;
+using MiCakeTemplate.EFCore.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,13 +16,12 @@ namespace MiCakeTemplate.EFCore.ModelConfigurations
 
             builder.OwnsMany(s => s.UserIdentifications, i =>
             {
-                i.HasKey(s => s.Value);
+                i.HasIndex(s => s.Value);
             });
 
             builder.OwnsOne(s => s.UserToken, i =>
             {
-                i.ToTable(nameof(UserSecurityToken));
-                i.WithOwner().HasForeignKey();
+                i.MapDomainEntityOwnsOneRelationship();
             });
         }
     }
