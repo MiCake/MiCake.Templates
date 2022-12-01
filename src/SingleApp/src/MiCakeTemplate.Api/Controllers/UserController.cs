@@ -9,7 +9,7 @@ namespace MiCakeTemplate.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : AppControllerBase<TodoController>
+    public class UserController : AppControllerBase<UserController>
     {
         private readonly IUserRepository _repo;
 
