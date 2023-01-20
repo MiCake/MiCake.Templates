@@ -18,6 +18,13 @@ namespace MiCakeTemplate.Api.Controllers
             _repo = repo;
         }
 
+        [HttpGet("test")]
+        [ProducesResponseType(200, Type = typeof(string))]
+        public IActionResult ForYourTest(string content)
+        {
+            return Ok(content);
+        }
+
         [HttpPost("")]
         [ProducesResponseType(200, Type = typeof(ApiResponse<TodoItemDto>))]
         public async Task<IActionResult> Create([FromBody] CreateTodoItemDto item)

@@ -1,62 +1,76 @@
 using MiCake;
 using MiCakeTemplate.Api;
-using Microsoft.OpenApi.Models;
+using MiCakeTemplate.Api.Middlewares;
 using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 
-// Add serilog
-builder.Host.UseSerilog((context, services, configuration) =>
+try
 {
-    configuration.ReadFrom.Configuration(context.Configuration)
-                 .ReadFrom.Services(services)
-                 .Enrich.FromLogContext();
-});
+    var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    // Add serilog
+    builder.Host.UseSerilog((context, services, configuration) =>
     {
-        Description = "Authorization format : Bearer {token}",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey
+        configuration.ReadFrom.Configuration(context.Configuration)
+                     .ReadFrom.Services(services)
+                     .Enrich.FromLogContext();
     });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    // Add services to the container.
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwagger();
+
+    builder.Services.AddAppCoreService(builder.Configuration);
+    builder.Services.AddHttpLogging(opt =>
     {
-        {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
-            new List<string>()
-        }
+        opt.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
     });
-});
-
-builder.Services.AddAppCoreService(builder.Configuration);
 
 
 
+    var app = builder.Build();
 
-var app = builder.Build();
+    app.UseHttpLogging();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseMiddleware<AppExceptionHandlerMiddleware>();
+
+    // Add CORS
+    app.UseCors(builder =>
+    {
+        builder.WithOrigins(app.Configuration.GetSection("CorsAllowedOrigin").Get<string[]>() ?? Array.Empty<string>())
+               .SetIsOriginAllowedToAllowWildcardSubdomains()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.StartMiCake();
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.StartMiCake();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

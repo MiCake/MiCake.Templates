@@ -3,10 +3,12 @@ using FluentValidation.AspNetCore;
 using MiCake;
 using MiCake.AspNetCore.Identity;
 using MiCake.Identity.Authentication.JwtToken;
+using MiCakeTemplate.Api.Extentsions;
 using MiCakeTemplate.EFCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace MiCakeTemplate.Api
@@ -61,6 +63,30 @@ namespace MiCakeTemplate.Api
                         options.DeleteRefreshTokenWhenExchange = true;
                     })
                     .Build();
+
+            return services;
+        }
+
+        public static IServiceCollection AddSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.OperationFilter<SwaggerApiResponseFilter>();
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Description = "Authorization format : Bearer {token}",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+                        new List<string>()
+                    }
+                });
+            });
 
             return services;
         }
