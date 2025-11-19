@@ -5,18 +5,33 @@ using Microsoft.Extensions.Logging;
 
 namespace StandardWeb.Common.Helpers;
 
+/// <summary>
+/// Provides JSON serialization/deserialization and safe property extraction utilities.
+/// Includes helpers for handling dynamic JSON structures and type-safe conversions.
+/// </summary>
 public static class JsonHelper
 {
+    /// <summary>
+    /// Serializes an object to JSON string using System.Text.Json.
+    /// </summary>
+    /// <typeparam name="T">Type of object to serialize</typeparam>
+    /// <param name="obj">Object to serialize</param>
+    /// <returns>JSON string representation</returns>
     public static string Serialize<T>(T obj)
     {
         return JsonSerializer.Serialize(obj);
     }
 
+    /// <summary>
+    /// Deserializes JSON string to typed object with camelCase handling.
+    /// </summary>
+    /// <typeparam name="T">Target type for deserialization</typeparam>
+    /// <param name="json">JSON string to deserialize</param>
+    /// <returns>Deserialized object or null if parsing fails</returns>
     public static T? Deserialize<T>(string json)
     {
         return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
         {
-            // ignore null
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
@@ -25,8 +40,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取字符串属性
+    /// Safely extracts string property from JsonElement, returning empty string if not found.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Property value or empty string</returns>
     public static string GetStringProperty(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var property) &&
@@ -38,8 +56,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取双精度属性
+    /// Safely extracts double property, handling both numeric and string representations.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Property value or null if not found or invalid</returns>
     public static double? GetDoubleProperty(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var property) &&
@@ -56,8 +77,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取整数属性
+    /// Safely extracts integer property, handling both numeric and string representations.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Property value or null if not found or invalid</returns>
     public static int? GetIntProperty(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var property) &&
@@ -74,8 +98,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取长整数属性
+    /// Safely extracts long integer property, handling both numeric and string representations.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Property value or null if not found or invalid</returns>
     public static long? GetLongProperty(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var property) &&
@@ -92,8 +119,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取布尔属性
+    /// Safely extracts boolean property, handling both boolean and string representations.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Property value or null if not found or invalid</returns>
     public static bool? GetBoolProperty(JsonElement element, string propertyName)
     {
         if (element.TryGetProperty(propertyName, out var property) &&
@@ -111,8 +141,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全解析日期属性
+    /// Safely parses date property and returns as yyyy-MM-dd format string.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>Formatted date string or empty string if invalid</returns>
     public static string ParseDateProperty(JsonElement element, string propertyName)
     {
         var dateString = GetStringProperty(element, propertyName);
@@ -124,8 +157,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全解析日期时间属性
+    /// Safely parses date property and returns as DateTime object.
     /// </summary>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <returns>DateTime value or null if invalid</returns>
     public static DateTime? ParseDateTimeProperty(JsonElement element, string propertyName)
     {
         var dateString = GetStringProperty(element, propertyName);
@@ -137,8 +173,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 检查JSON元素是否存在且不为null
+    /// Checks if JSON element has a valid (non-null) property.
     /// </summary>
+    /// <param name="element">JSON element to check</param>
+    /// <param name="propertyName">Property name to verify</param>
+    /// <returns>True if property exists and is not null</returns>
     public static bool HasValidProperty(JsonElement element, string propertyName)
     {
         return element.TryGetProperty(propertyName, out var property) &&
@@ -146,8 +185,12 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取嵌套属性
+    /// Safely navigates nested JSON properties using a property path.
+    /// Example: GetNestedProperty(element, "user", "profile", "name")
     /// </summary>
+    /// <param name="element">Root JSON element</param>
+    /// <param name="propertyPath">Sequence of property names to navigate</param>
+    /// <returns>Final nested element or null if any property in path is missing</returns>
     public static JsonElement? GetNestedProperty(JsonElement element, params string[] propertyPath)
     {
         var current = element;
@@ -165,8 +208,11 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 解析字符串为double，处理特殊字符
+    /// Parses string to double, removing common special characters (+, %).
+    /// Useful for parsing percentages and formatted numbers.
     /// </summary>
+    /// <param name="value">String value to parse</param>
+    /// <returns>Parsed double value or 0 if invalid</returns>
     public static double ParseStringToDouble(string? value)
     {
         if (string.IsNullOrEmpty(value)) return 0;
@@ -176,8 +222,13 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// 安全获取属性值并转换为指定类型
+    /// Generic property value extractor with type-safe conversion and default value.
     /// </summary>
+    /// <typeparam name="T">Target type for conversion</typeparam>
+    /// <param name="element">JSON element to search</param>
+    /// <param name="propertyName">Property name to extract</param>
+    /// <param name="defaultValue">Default value if property not found or conversion fails</param>
+    /// <returns>Converted property value or default</returns>
     public static T GetPropertyValue<T>(JsonElement element, string propertyName, T defaultValue = default!)
     {
         if (!element.TryGetProperty(propertyName, out var property) ||
@@ -197,6 +248,12 @@ public static class JsonHelper
         };
     }
 
+    /// <summary>
+    /// Converts JSON array to DataTable for legacy code or reporting scenarios.
+    /// Each JSON object becomes a row, with properties as columns.
+    /// </summary>
+    /// <param name="jsonArray">JSON array element</param>
+    /// <returns>DataTable with converted data or null if invalid</returns>
     public static DataTable? ConvertJsonArrayToDataTable(JsonElement jsonArray)
     {
         if (jsonArray.ValueKind != JsonValueKind.Array || jsonArray.GetArrayLength() == 0)
@@ -242,8 +299,13 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// Convert JsonElement array to List of typed objects
+    /// Converts JSON array to strongly-typed List with custom DateTime handling.
+    /// Uses custom converters for flexible date format support.
     /// </summary>
+    /// <typeparam name="T">Target type for list items</typeparam>
+    /// <param name="jsonArray">JSON array element</param>
+    /// <param name="logger">Optional logger for error tracking</param>
+    /// <returns>List of typed objects or null if conversion fails</returns>
     public static List<T>? ConvertJsonToList<T>(JsonElement jsonArray, ILogger? logger = null)
     {
         if (jsonArray.ValueKind != JsonValueKind.Array || jsonArray.GetArrayLength() == 0)
@@ -281,7 +343,7 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// Custom DateTime converter to handle formats like "yyyy-MM-dd HH:mm:ss"
+    /// Custom DateTime converter supporting "yyyy-MM-dd HH:mm:ss" and standard formats.
     /// </summary>
     private class CustomDateTimeConverter : JsonConverter<DateTime>
     {
@@ -291,7 +353,7 @@ public static class JsonHelper
             if (string.IsNullOrWhiteSpace(dateString))
                 return default;
 
-            // Try parsing the custom format first, then fall back to standard parsing
+            // Try parsing with flexible format support
             if (DateTime.TryParse(dateString, out var date))
                 return date;
 
@@ -305,7 +367,7 @@ public static class JsonHelper
     }
 
     /// <summary>
-    /// Custom Nullable DateTime converter
+    /// Custom nullable DateTime converter with same format support as CustomDateTimeConverter.
     /// </summary>
     private class CustomNullableDateTimeConverter : JsonConverter<DateTime?>
     {
