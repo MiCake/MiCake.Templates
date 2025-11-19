@@ -4,7 +4,7 @@ using StandardWeb.Application;
 
 namespace StandardWeb.Web;
 
-[RelyOn(typeof(StandardWebApplicationModule), typeof(MiCakeAspNetCoreModule))]
+[RelyOn(typeof(ApplicationModule), typeof(MiCakeAspNetCoreModule))]
 public class AppModule : MiCakeModule
 {
 

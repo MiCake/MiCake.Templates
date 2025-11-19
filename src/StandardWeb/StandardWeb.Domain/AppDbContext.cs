@@ -10,6 +10,8 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
     public DbSet<User> User { get; set; }
     public DbSet<UserLoginHistory> UserLoginHistory { get; set; }
+    public DbSet<ExternalLoginProvider> ExternalLoginProviders { get; set; }
+    public DbSet<UserToken> UserTokens { get; set; }
 
     #endregion
 

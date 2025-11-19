@@ -7,9 +7,6 @@ using CommonWebLib.ServiceExtensions;
 using StandardWeb.Domain;
 using StandardWeb.Web;
 using StandardWeb.Web.StartUp;
-using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,15 +22,7 @@ try
 
     builder.Host.UseSerilog();
 
-    builder.Services.AddControllers();
-    builder.Services.Configure<ApiBehaviorOptions>(options =>
-    {
-        options.InvalidModelStateResponseFactory = actionContext =>
-        {
-            return CustomModelStateResponseFactory.CreateResponse(actionContext);
-        };
-    });
-    builder.Services.AddOpenApi();
+    builder.Services.AddWebApiDefaults(builder.Configuration, typeof(Program).Assembly);
 
     builder.Services.AddMySql<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -43,11 +32,6 @@ try
 
     builder.Services.AddJWTAuthentication(builder.Configuration);
     builder.Services.AddCorsPolicy(builder.Configuration);
-    builder.Services.AddAutoMapper(typeof(Program).Assembly);
-    builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-    builder.Services.AddFluentValidationAutoValidation();
-    builder.Services.RegisterOptions(builder.Configuration);
-    builder.Services.AddCoreServices();
 
     var app = builder.Build();
 

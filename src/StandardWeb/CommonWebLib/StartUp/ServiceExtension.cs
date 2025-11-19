@@ -1,4 +1,7 @@
+using System;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -49,37 +52,58 @@ public static class ServiceExtension
 
     public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
     {
-        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string>()?.Split(',')
-            .Select(origin => origin.Trim())
-            .Where(origin => !string.IsNullOrEmpty(origin))
+        var rawOrigins = configuration.GetValue<string>("AllowedOrigins");
+        var parsedOrigins = rawOrigins?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToArray() ?? Array.Empty<string>();
 
-        // Register CORS policy
+        var allowAnyOrigin = parsedOrigins.Length == 0 || parsedOrigins.Contains("*");
+        var wildcardOrigins = parsedOrigins.Where(origin => origin.Contains('*') && origin != "*").ToArray();
+        var strictOrigins = parsedOrigins.Except(wildcardOrigins).Where(origin => origin != "*").ToArray();
+
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                if (allowedOrigins.Length > 0)
+                if (allowAnyOrigin)
                 {
-                    builder.WithOrigins(allowedOrigins)
-                           .SetIsOriginAllowedToAllowWildcardSubdomains();
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                    return;
                 }
-                else
-                {
-                    // Fallback for development
-                    builder.AllowAnyOrigin();
-                }
-                builder.AllowAnyMethod();
-                builder.AllowAnyHeader();
 
-                // Note: AllowCredentials() cannot be used with AllowAnyOrigin()
-                if (allowedOrigins.Length > 0)
+                if (strictOrigins.Length > 0)
                 {
-                    builder.AllowCredentials();
+                    builder.WithOrigins(strictOrigins);
                 }
+
+                if (wildcardOrigins.Length > 0)
+                {
+                    // Allow wildcard hostnames (e.g. https://*.contoso.com) without exposing the app to arbitrary origins.
+                    builder.SetIsOriginAllowed(origin =>
+                    {
+                        if (strictOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                        return wildcardOrigins.Any(pattern => MatchesWildcardOrigin(pattern, origin));
+                    });
+                }
+
+                builder.AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
         });
 
         return services;
+    }
+
+    private static bool MatchesWildcardOrigin(string pattern, string origin)
+    {
+        var regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+        return Regex.IsMatch(origin, regexPattern, RegexOptions.IgnoreCase);
     }
 }
