@@ -1,11 +1,37 @@
 namespace CommonWebLib.CodeDefines;
 
 /// <summary>
-/// Centralized error code definitions for API responses.
-/// Format: ModuleCode.ErrorCode (e.g., "01.1000" for auth update failure)
+/// Centralized error and success code definitions for API responses.
+/// Format: ModuleCode.Code (e.g., "01.1000" for auth update failure, "01.0000" for success)
 /// </summary>
 public class ErrorCodeDefinition
 {
+    // Success codes (0000-0999)
+    /// <summary>
+    /// Operation completed successfully
+    /// </summary>
+    public const string Success = "0000";
+
+    /// <summary>
+    /// Resource retrieved successfully
+    /// </summary>
+    public const string GetSuccess = "0001";
+
+    /// <summary>
+    /// Resource created successfully
+    /// </summary>
+    public const string CreateSuccess = "0002";
+
+    /// <summary>
+    /// Resource updated successfully
+    /// </summary>
+    public const string UpdateSuccess = "0003";
+
+    /// <summary>
+    /// Resource deleted successfully
+    /// </summary>
+    public const string DeleteSuccess = "0004";
+
     // CRUD operation errors (1000-1999)
     /// <summary>
     /// Failed to update resource in database

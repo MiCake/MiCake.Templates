@@ -55,7 +55,7 @@ namespace StandardWeb.Web.Controllers
                 return BadRequest(loginResult.ErrorCode ?? ErrorCodeDefinition.OperationFailed, loginResult.ErrorMessage);
             }
 
-            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(loginResult.Data));
+            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(loginResult.Data), ErrorCodeDefinition.Success);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace StandardWeb.Web.Controllers
                 return BadRequest(result.ErrorCode ?? ErrorCodeDefinition.OperationFailed, result.ErrorMessage);
             }
 
-            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(result.Data));
+            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(result.Data), ErrorCodeDefinition.Success);
         }
     }
 }

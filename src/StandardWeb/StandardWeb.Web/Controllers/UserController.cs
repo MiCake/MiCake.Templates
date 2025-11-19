@@ -47,7 +47,7 @@ namespace StandardWeb.Web.Controllers
             }
 
             var userDto = Mapper.Map<User, UserDto>(user);
-            return Ok(userDto);
+            return Ok(userDto, ErrorCodeDefinition.GetSuccess);
         }
     }
 }
