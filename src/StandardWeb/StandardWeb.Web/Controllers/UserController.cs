@@ -5,6 +5,9 @@ using StandardWeb.Web.Dtos.Identity;
 
 namespace StandardWeb.Web.Controllers
 {
+    /// <summary>
+    /// Handles user management operations
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : BaseApiController
@@ -20,6 +23,11 @@ namespace StandardWeb.Web.Controllers
             ModuleCode = ModuleCodes.UserManagementModule;
         }
 
+        /// <summary>
+        /// Retrieves user information by user ID
+        /// </summary>
+        /// <param name="id">The unique identifier of the user</param>
+        /// <returns>User details if found; otherwise a not found error</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserById([FromRoute] long id)

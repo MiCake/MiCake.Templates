@@ -4,6 +4,9 @@ using StandardWeb.Domain.Enums.Identity;
 
 namespace StandardWeb.Domain.Models.Identity;
 
+/// <summary>
+/// Represents a user in the system with authentication, profile, and security features
+/// </summary>
 public class User : AuditAggregateRoot
 {
     [MaxLength(15)]
@@ -57,6 +60,14 @@ public class User : AuditAggregateRoot
 
     protected User() { }
 
+    /// <summary>
+    /// Factory method to create a new user with phone number and password
+    /// </summary>
+    /// <param name="phoneNumber">User's phone number (required)</param>
+    /// <param name="passwordHash">BCrypt hashed password (required)</param>
+    /// <param name="salt">Optional salt value for password hashing</param>
+    /// <returns>A new User instance</returns>
+    /// <exception cref="ArgumentException">Thrown when phone number or password hash is empty</exception>
     public static User RegisterNewUser(string phoneNumber, string passwordHash, string? salt = null)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
@@ -75,6 +86,13 @@ public class User : AuditAggregateRoot
         return user;
     }
 
+    /// <summary>
+    /// Updates the user's profile information
+    /// </summary>
+    /// <param name="firstName">User's first name</param>
+    /// <param name="lastName">User's last name</param>
+    /// <param name="displayName">User's display name</param>
+    /// <param name="dateOfBirth">Optional date of birth</param>
     public void UpdateProfile(string? firstName, string? lastName, string? displayName, DateTime? dateOfBirth = null)
     {
         FirstName = firstName ?? string.Empty;

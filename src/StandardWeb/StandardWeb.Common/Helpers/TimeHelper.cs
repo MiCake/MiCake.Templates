@@ -1,13 +1,28 @@
 namespace StandardWeb.Common.Helpers;
 
+/// <summary>
+/// Provides utility methods for time-related operations
+/// </summary>
 public static class TimeHelper
 {
+    /// <summary>
+    /// Converts a DateTime to Unix timestamp
+    /// </summary>
+    /// <param name="dateTime">The DateTime to convert</param>
+    /// <param name="type">Whether to return seconds or milliseconds</param>
+    /// <returns>Unix timestamp as string</returns>
     public static string GetUnixTimeStamp(DateTime dateTime, UnixTimeStampType type = UnixTimeStampType.Seconds)
     {
         var unixTime = (dateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
         return type == UnixTimeStampType.Milliseconds ? (unixTime * 1000).ToString() : unixTime.ToString();
     }
 
+    /// <summary>
+    /// Validates that start time is not greater than end time
+    /// </summary>
+    /// <param name="startTime">The start time</param>
+    /// <param name="endTime">The end time (optional)</param>
+    /// <exception cref="ArgumentException">Thrown when start time is greater than end time</exception>
     public static void CheckTimeRange(DateTime startTime, DateTime? endTime)
     {
         if (endTime.HasValue && startTime > endTime.Value)
@@ -16,6 +31,9 @@ public static class TimeHelper
         }
     }
 
+    /// <summary>
+    /// Defines the unit for Unix timestamp
+    /// </summary>
     public enum UnixTimeStampType
     {
         Seconds,

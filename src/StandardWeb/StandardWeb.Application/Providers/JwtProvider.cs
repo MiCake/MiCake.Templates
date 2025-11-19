@@ -8,11 +8,20 @@ using StandardWeb.Domain.Models.Identity;
 
 namespace StandardWeb.Application.Providers;
 
+/// <summary>
+/// Provides JWT token generation and management services
+/// </summary>
 [InjectService(Lifetime = MiCakeServiceLifetime.Scoped)]
 public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
 {
     private readonly JwtConfigOptions _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig), "JWT configuration cannot be null.");
 
+    /// <summary>
+    /// Generates a JWT access token and refresh token for the specified user
+    /// </summary>
+    /// <param name="user">The user for whom to generate the token</param>
+    /// <param name="claims">Additional claims to include in the token</param>
+    /// <returns>A JwtTokenModel containing the access token, refresh token, and expiration times</returns>
     public JwtTokenModel GenerateToken(User user, List<Claim> claims)
     {
         if (user == null) throw new ArgumentNullException(nameof(user), "User cannot be null.");
@@ -59,6 +68,8 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
     /// <summary>
     /// Extracts claims from a JWT token for validation and token generation
     /// </summary>
+    /// <param name="token">The JWT token string to parse</param>
+    /// <returns>A list of claims extracted from the token, or an empty list if parsing fails</returns>
     public static List<Claim> GetClaimsFromToken(string token)
     {
         try
@@ -73,6 +84,10 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         }
     }
 
+    /// <summary>
+    /// Generates a cryptographically secure random refresh token
+    /// </summary>
+    /// <returns>A base64-encoded random string suitable for use as a refresh token</returns>
     private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];

@@ -10,6 +10,9 @@ using StandardWeb.Domain.Repositories;
 
 namespace StandardWeb.Application.Services.Auth;
 
+/// <summary>
+/// Provides authentication services including user registration, login, and token refresh
+/// </summary>
 [InjectService(Lifetime = MiCakeServiceLifetime.Scoped)]
 public class AuthService : BaseLoginService
 {
@@ -19,7 +22,12 @@ public class AuthService : BaseLoginService
     {
     }
 
-    // this login is for admin web platform only
+    /// <summary>
+    /// Registers a new user with phone number and password
+    /// </summary>
+    /// <param name="data">User registration data including phone number, password, and profile information</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Operation result containing the created user or error information</returns>
     public async Task<OperationResult<User?>> RegisterAsync(UserRegistrationModel data, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Registering user with phone number: {PhoneNumber}", data.PhoneNumber);
@@ -55,7 +63,12 @@ public class AuthService : BaseLoginService
         return OperationResult<User?>.Success(newUser);
     }
 
-    // this login is for admin web platform only
+    /// <summary>
+    /// Authenticates a user with phone number and password, optionally requiring OTP verification
+    /// </summary>
+    /// <param name="data">Login credentials including phone number, password, and optional OTP code</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Operation result containing login result with JWT tokens or error information</returns>
     public async Task<OperationResult<UserLoginResult>> LoginAsync(UserLoginModel data, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Logging in user with phone number: {PhoneNumber}", data.PhoneNumber);
@@ -99,6 +112,12 @@ public class AuthService : BaseLoginService
         return OperationResult<UserLoginResult>.Success(loginResult);
     }
 
+    /// <summary>
+    /// Refreshes an expired JWT token using a valid refresh token
+    /// </summary>
+    /// <param name="refreshToken">The refresh token to use for generating new tokens</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Operation result containing new JWT tokens or error information</returns>
     public async Task<OperationResult<UserLoginResult>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         return await ValidateAndRefreshTokenAsync(refreshToken, cancellationToken);
