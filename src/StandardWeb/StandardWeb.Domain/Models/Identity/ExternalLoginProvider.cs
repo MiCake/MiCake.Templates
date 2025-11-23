@@ -86,9 +86,9 @@ public class ExternalLoginProvider : AuditEntity
 
     #region Navigation Properties
     public long UserId { get; private set; }
-    
+
     [ForeignKey(nameof(UserId))]
-    public User User { get; private set; } = null!; 
+    public User User { get; private set; } = null!;
     #endregion
 
     protected ExternalLoginProvider() { }
@@ -111,7 +111,7 @@ public class ExternalLoginProvider : AuditEntity
             ProviderUnionId = providerUnionId,
             NickName = nickName,
             AvatarUrl = avatarUrl,
-            AccessToken = accessToken, // For WeChat, store session_key in AccessToken
+            AccessToken = accessToken,
             BindTime = TimeNow.Now,
             IsUnbound = false
         };

@@ -1,4 +1,4 @@
-namespace CommonWebLib.CodeDefines;
+namespace StandardWeb.Web.Constants;
 
 /// <summary>
 /// Module code prefixes for error code categorization.

@@ -1,10 +1,9 @@
-using MiCake.Core.DependencyInjection;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StandardWeb.Application.CodeDefines;
-using StandardWeb.Application.Models;
+using StandardWeb.Application.ErrorCodes;
 using StandardWeb.Application.Providers;
-using StandardWeb.Common;
 using StandardWeb.Common.Helpers;
+using StandardWeb.Contracts.Dtos.Identity;
 using StandardWeb.Domain.Models.Identity;
 using StandardWeb.Domain.Repositories;
 
@@ -17,14 +16,10 @@ namespace StandardWeb.Application.Services.Auth;
 [InjectService(Lifetime = MiCakeServiceLifetime.Scoped)]
 public class AuthService : BaseLoginService
 {
-    /// <summary>
-    /// Initializes the authentication service with required dependencies.
-    /// </summary>
-    /// <param name="jwtProvider">Provider for JWT token generation and validation</param>
-    /// <param name="userRepo">Repository for user data access</param>
-    /// <param name="logger">Logger for authentication events</param>
-    public AuthService(JwtProvider jwtProvider, IUserRepo userRepo, ILogger<AuthService> logger)
-        : base(jwtProvider, userRepo, logger)
+    public AuthService(JwtProvider jwtProvider,
+                       IUserRepo userRepo,
+                       IMapper mapper,
+                       ILogger<AuthService> logger) : base(jwtProvider, userRepo, mapper, logger)
     {
     }
 
@@ -35,7 +30,7 @@ public class AuthService : BaseLoginService
     /// <param name="data">Registration data including credentials and profile info</param>
     /// <param name="cancellationToken">Cancellation token for async operation</param>
     /// <returns>Operation result with created user or error details</returns>
-    public async Task<OperationResult<User?>> RegisterAsync(UserRegistrationModel data, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<User?>> RegisterAsync(UserRegistrationDto data, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Registering user with phone number: {PhoneNumber}", data.PhoneNumber);
 
@@ -46,8 +41,8 @@ public class AuthService : BaseLoginService
         }
 
         // Check if phone number already exists
-        var existingUser = await UserRepo.GetByPhoneNumberAsync(data.PhoneNumber!, cancellationToken: cancellationToken);
-        if (existingUser != null)
+        var existingUser = await UserRepo.GetByPhoneNumberAsync(data.PhoneNumber!, false, cancellationToken: cancellationToken);
+        if (existingUser is not null)
         {
             return OperationResult<User?>.Failure("User with the given phone number already exists.", AuthErrorCodes.UserAlreadyExists);
         }
@@ -82,35 +77,35 @@ public class AuthService : BaseLoginService
     /// <param name="data">Login credentials and optional OTP code</param>
     /// <param name="cancellationToken">Cancellation token for async operation</param>
     /// <returns>Operation result with login tokens and user info, or error details</returns>
-    public async Task<OperationResult<UserLoginResult>> LoginAsync(UserLoginModel data, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<LoginResultDto>> LoginAsync(LoginRequestDto data, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Logging in user with phone number: {PhoneNumber}", data.PhoneNumber);
 
         // Load user with related tokens for refresh token validation
         var user = await UserRepo.GetByPhoneNumberWithIncludesAsync(data.PhoneNumber!, s => s.Include(j => j.UserTokens), cancellationToken: cancellationToken);
-        if (user == null)
+        if (user is null)
         {
-            return OperationResult<UserLoginResult>.Failure("User not found.", AuthErrorCodes.UserNotFound);
+            return OperationResult<LoginResultDto>.Failure("User not found.", AuthErrorCodes.UserNotFound);
         }
 
         // Validate account status (locked, suspended, etc.)
         var accountValidation = ValidateUserAccountStatus(user);
         if (!accountValidation.IsSuccess)
         {
-            return OperationResult<UserLoginResult>.Failure(accountValidation.ErrorMessage ?? "Account validation failed", accountValidation.ErrorCode);
+            return OperationResult<LoginResultDto>.Failure(accountValidation.ErrorMessage ?? "Account validation failed", accountValidation.ErrorCode);
         }
 
         // Check if OTP is required for this account
         if (user.ForceOTPOnLogin && string.IsNullOrWhiteSpace(data.OtpCode))
         {
-            return OperationResult<UserLoginResult>.Success(CreateOtpRequiredResult());
+            return OperationResult<LoginResultDto>.Success(CreateOtpRequiredResult());
         }
 
         // Verify password hash
         if (!EncryptionHelper.VerifyHash(data.Password!, user.PasswordHash, user.Salt ?? ""))
         {
             await HandleFailedLoginAttemptAsync(user, cancellationToken);
-            return OperationResult<UserLoginResult>.Failure("Invalid credentials.", AuthErrorCodes.InvalidCredentials);
+            return OperationResult<LoginResultDto>.Failure("Invalid credentials.", AuthErrorCodes.InvalidCredentials);
         }
 
         // Validate OTP code if provided (placeholder for actual OTP validation)
@@ -129,7 +124,7 @@ public class AuthService : BaseLoginService
         var loginResult = CreateLoginResult(user, tokenResult);
 
         Logger.LogInformation("User {UserId} logged in successfully", user.Id);
-        return OperationResult<UserLoginResult>.Success(loginResult);
+        return OperationResult<LoginResultDto>.Success(loginResult);
     }
 
     /// <summary>
@@ -139,7 +134,7 @@ public class AuthService : BaseLoginService
     /// <param name="refreshToken">Current refresh token</param>
     /// <param name="cancellationToken">Cancellation token for async operation</param>
     /// <returns>Operation result with new tokens or error details</returns>
-    public async Task<OperationResult<UserLoginResult>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<LoginResultDto>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         return await ValidateAndRefreshTokenAsync(refreshToken, cancellationToken);
     }

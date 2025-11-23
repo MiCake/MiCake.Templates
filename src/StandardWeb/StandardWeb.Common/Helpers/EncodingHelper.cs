@@ -55,7 +55,7 @@ public class EncodingHelper
     /// </summary>
     /// <param name="contentType">Content-Type header value</param>
     /// <returns>Detected encoding or UTF-8 as fallback</returns>
-    private static System.Text.Encoding GetEncodingFromContentType(string contentType)
+    private static Encoding GetEncodingFromContentType(string contentType)
     {
         try
         {
@@ -87,49 +87,5 @@ public class EncodingHelper
         }
 
         return Encoding.UTF8;
-    }
-
-    /// <summary>
-    /// Detects encoding from byte order mark (BOM) or content analysis.
-    /// Useful for files without explicit encoding specification.
-    /// </summary>
-    /// <param name="bytes">Byte array to analyze</param>
-    /// <returns>Detected encoding or UTF-8 as fallback</returns>
-    private static System.Text.Encoding DetectEncoding(byte[] bytes)
-    {
-        // Check for UTF-8 BOM (EF BB BF)
-        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
-            return Encoding.UTF8;
-
-        // Check for UTF-16 LE BOM (FF FE)
-        if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE)
-            return Encoding.Unicode;
-
-        // Check for UTF-16 BE BOM (FE FF)
-        if (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF)
-            return Encoding.BigEndianUnicode;
-
-        // For Chinese content, try GB2312/GBK if UTF-8 detection fails
-        try
-        {
-            var utf8String = Encoding.UTF8.GetString(bytes);
-            // Check if UTF-8 decoding produced valid content (no replacement characters)
-            if (!utf8String.Contains('\uFFFD'))
-                return Encoding.UTF8;
-        }
-        catch
-        {
-            // UTF-8 decoding failed, will try GB2312
-        }
-
-        // Default to GB2312 for Chinese content
-        try
-        {
-            return Encoding.GetEncoding("GB2312");
-        }
-        catch
-        {
-            return Encoding.UTF8; // Final fallback
-        }
     }
 }

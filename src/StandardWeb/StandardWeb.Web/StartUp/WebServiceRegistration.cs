@@ -1,8 +1,6 @@
 using System.Reflection;
-using CommonWebLib.StartUp;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
 using StandardWeb.Common.Auth;
 
 namespace StandardWeb.Web.StartUp;
@@ -19,11 +17,6 @@ public static class WebServiceRegistration
     {
         services.AddControllers();
 
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.InvalidModelStateResponseFactory = CustomModelStateResponseFactory.CreateResponse;
-        });
-
         services.AddOpenApi();
         services.AddAutoMapper(webAssembly);
         services.AddValidatorsFromAssembly(webAssembly);
@@ -36,14 +29,19 @@ public static class WebServiceRegistration
     }
 
     /// <summary>
-    /// Binds strongly typed configuration sections that other layers expect.
+    /// Registers strongly typed options from configuration for the API host.
     /// </summary>
     public static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<AESEncryptionOptions>()
-            .Bind(configuration.GetSection("AESEncryption"))
-            .Validate(o => !string.IsNullOrWhiteSpace(o.Key), "AESEncryption:Key must be configured.")
-            .ValidateOnStart();
+        // JWT configuration
+        services.Configure<JwtConfigOptions>(configuration.GetSection("Jwt"));
+
+        return services;
+    }
+
+    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    {
+        services.AddScoped<InfrastructureTools>();
 
         return services;
     }

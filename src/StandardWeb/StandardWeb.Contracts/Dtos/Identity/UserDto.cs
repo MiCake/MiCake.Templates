@@ -1,4 +1,4 @@
-namespace StandardWeb.Web.Dtos.Identity;
+namespace StandardWeb.Contracts.Dtos.Identity;
 
 public class UserDto
 {

@@ -26,7 +26,6 @@ public class UserToken : AuditEntity
     public User User { get; private set; } = null!;
     #endregion
 
-    // Required by EF Core
     protected UserToken() { }
 
     public static UserToken Create(UserTokenType type, string value, DateTime? expiryDate = null)

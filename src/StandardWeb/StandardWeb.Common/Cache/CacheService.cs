@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Caching.Distributed;
 using MiCake.Core.DependencyInjection;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -33,7 +34,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
             if (string.IsNullOrEmpty(cachedValue))
             {
                 _logger.LogDebug("Cache miss for key: {CacheKey}", key);
-                return default(T);
+                return default;
             }
 
             var result = JsonSerializer.Deserialize<T>(cachedValue, _jsonOptions);
@@ -43,7 +44,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting cache item with key: {CacheKey}", key);
-            return default(T);
+            return default;
         }
     }
 
@@ -136,7 +137,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing factory method for key: {CacheKey}", key);
-            return default(T);
+            return default;
         }
     }
 
@@ -169,7 +170,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
             if (string.IsNullOrEmpty(cachedValue))
             {
                 _logger.LogDebug("Cache miss for key: {CacheKey}", key);
-                return default(T);
+                return default;
             }
 
             var result = JsonSerializer.Deserialize<T>(cachedValue, _jsonOptions);
@@ -179,7 +180,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting cache item with key: {CacheKey}", key);
-            return default(T);
+            return default;
         }
     }
 
@@ -272,7 +273,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error executing factory method for key: {CacheKey}", key);
-            return default(T);
+            return default;
         }
     }
 }

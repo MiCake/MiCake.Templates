@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using StandardWeb.Contracts.Dtos.Identity;
 using StandardWeb.Domain.Models.Identity;
 using StandardWeb.Domain.Repositories;
-using StandardWeb.Web.Dtos.Identity;
+using StandardWeb.Web.Constants;
 
 namespace StandardWeb.Web.Controllers
 {
@@ -15,12 +16,6 @@ namespace StandardWeb.Web.Controllers
         private readonly IUserRepo _userRepo;
         private readonly ILogger<UserController> _logger;
 
-        /// <summary>
-        /// Initializes the user controller with required services.
-        /// </summary>
-        /// <param name="infrastructureTools">Shared infrastructure services</param>
-        /// <param name="userRepo">Repository for user data access</param>
-        /// <param name="logger">Logger for user operations</param>
         public UserController(InfrastructureTools infrastructureTools, IUserRepo userRepo, ILogger<UserController> logger) : base(infrastructureTools)
         {
             _userRepo = userRepo;
@@ -33,21 +28,20 @@ namespace StandardWeb.Web.Controllers
         /// Retrieves user profile information by user ID.
         /// </summary>
         /// <param name="id">User ID to retrieve</param>
-        /// <returns>User profile data if found</returns>
-        /// <response code="200">User found, returns profile data</response>
-        /// <response code="400">User not found</response>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserById([FromRoute] long id)
         {
+            _logger.LogInformation("Retrieving user profile for user ID: {UserId}", id);
+
             var user = await _userRepo.FindAsync(id);
-            if (user == null)
+            if (user is null)
             {
-                return BadRequest(ErrorCodeDefinition.NotFound, "User not found.");
+                return BadRequest(BaseErrorCodes.NotFound, "User not found.");
             }
 
             var userDto = Mapper.Map<User, UserDto>(user);
-            return Ok(userDto, ErrorCodeDefinition.GetSuccess);
+            return Ok(userDto);
         }
     }
 }

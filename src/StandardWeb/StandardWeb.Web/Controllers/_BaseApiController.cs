@@ -1,9 +1,8 @@
 using AutoMapper;
-using MiCake.AspNetCore.DataWrapper;
+using MiCake.AspNetCore.Responses;
 using MiCake.Core.DependencyInjection;
-using MiCake.DDD.Extensions.Paging;
+using MiCake.Util.Query.Paging;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using StandardWeb.Common.Helpers;
 
 namespace CommonWebLib
@@ -60,7 +59,7 @@ namespace CommonWebLib
             {
                 Code = $"{ModuleCode}.{code}",
                 Message = message,
-                Data = data
+                Data = data!
             });
         }
 
@@ -76,7 +75,7 @@ namespace CommonWebLib
             {
                 Code = $"{ModuleCode}.{code}",
                 Message = message ?? "Unauthorized access.",
-                Data = data
+                Data = data!
             });
         }
 
@@ -92,7 +91,7 @@ namespace CommonWebLib
             {
                 Code = $"{ModuleCode}.{code}",
                 Message = message ?? "Operation successful.",
-                Data = data
+                Data = data!
             });
         }
 
@@ -119,7 +118,7 @@ namespace CommonWebLib
         /// <typeparam name="TDto">Target DTO type</typeparam>
         /// <param name="pagingResult">Paging result containing domain models</param>
         /// <returns>Paging result containing mapped DTOs, or null if input is null</returns>
-        protected PagingQueryResult<TDto>? MappingPagingDto<T, TDto>(PagingQueryResult<T> pagingResult)
+        protected PagingResponse<TDto>? MappingPagingDto<T, TDto>(PagingResponse<T> pagingResult)
             where TDto : class
         {
             if (pagingResult == null)
@@ -128,7 +127,7 @@ namespace CommonWebLib
             }
 
             var dtoList = Mapper.Map<List<TDto>>(pagingResult.Data);
-            return new PagingQueryResult<TDto>(pagingResult.CurrentIndex, pagingResult.TotalCount, dtoList);
+            return new PagingResponse<TDto>(pagingResult.CurrentIndex, pagingResult.TotalCount, dtoList);
         }
     }
 

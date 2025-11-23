@@ -1,2 +1,2 @@
-global using CommonWebLib.CodeDefines;
 global using CommonWebLib;
+global using StandardWeb.Application.ErrorCodes;

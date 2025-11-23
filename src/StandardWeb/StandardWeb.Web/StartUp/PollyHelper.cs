@@ -2,7 +2,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Serilog;
 
-namespace CommonWebLib.ServiceExtensions;
+namespace StandardWeb.Web.StartUp;
 
 public static class PollyHelper
 {
@@ -21,32 +21,6 @@ public static class PollyHelper
                         retryCount,
                         context.OperationKey ?? "Unknown",
                         timespan.TotalMilliseconds,
-                        outcome.Exception?.Message ?? outcome.Result?.ReasonPhrase ?? "Unknown");
-                });
-    }
-
-    public static IAsyncPolicy<HttpResponseMessage> GetStockDataRetryPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests) // Handle rate limiting
-            .WaitAndRetryAsync(
-                retryCount: 5,
-                sleepDurationProvider: retryAttempt =>
-                {
-                    // Handle rate limiting with longer delays
-                    if (retryAttempt <= 2)
-                        return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
-                    else
-                        return TimeSpan.FromMinutes(retryAttempt - 1); // Longer delays for rate limiting
-                },
-                onRetry: (outcome, timespan, retryCount, context) =>
-                {
-                    var statusCode = outcome.Result?.StatusCode.ToString() ?? "Exception";
-                    Log.Warning("Stock data retry {RetryCount} in {Timespan}ms. Status: {StatusCode}. Reason: {Reason}",
-                        retryCount,
-                        timespan.TotalMilliseconds,
-                        statusCode,
                         outcome.Exception?.Message ?? outcome.Result?.ReasonPhrase ?? "Unknown");
                 });
     }
