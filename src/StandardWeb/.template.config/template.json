@@ -8,7 +8,7 @@
     ],
     "identity": "MiCake.StandardWeb.Template",
     "name": "MiCake Standard Web Template",
-    "shortName": "micake-standardweb",
+    "shortName": "micake-sd-web",
     "sourceName": "StandardWeb",
     "tags": {
         "language": "C#",

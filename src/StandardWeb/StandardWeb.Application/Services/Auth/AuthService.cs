@@ -30,27 +30,27 @@ public class AuthService : BaseLoginService
     /// <param name="data">Registration data including credentials and profile info</param>
     /// <param name="cancellationToken">Cancellation token for async operation</param>
     /// <returns>Operation result with created user or error details</returns>
-    public async Task<OperationResult<User?>> RegisterAsync(UserRegistrationDto data, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto data, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Registering user with phone number: {PhoneNumber}", data.PhoneNumber);
 
         // Validate phone number format (Chinese mobile format)
         if (FormatChecker.IsValidPhoneNumber(data.PhoneNumber) == false)
         {
-            return OperationResult<User?>.Failure("Invalid phone number format.", BaseErrorCodes.InvalidInput);
+            return OperationResult<UserDto?>.Failure("Invalid phone number format.", BaseErrorCodes.InvalidInput);
         }
 
         // Check if phone number already exists
         var existingUser = await UserRepo.GetByPhoneNumberAsync(data.PhoneNumber!, false, cancellationToken: cancellationToken);
         if (existingUser is not null)
         {
-            return OperationResult<User?>.Failure("User with the given phone number already exists.", AuthErrorCodes.UserAlreadyExists);
+            return OperationResult<UserDto?>.Failure("User with the given phone number already exists.", AuthErrorCodes.UserAlreadyExists);
         }
 
         // Validate password is provided
         if (string.IsNullOrWhiteSpace(data.Password))
         {
-            return OperationResult<User?>.Failure("Password cannot be empty.", BaseErrorCodes.InvalidInput);
+            return OperationResult<UserDto?>.Failure("Password cannot be empty.", BaseErrorCodes.InvalidInput);
         }
 
         // Hash password with BCrypt
@@ -63,11 +63,11 @@ public class AuthService : BaseLoginService
         var result = await UserRepo.SaveChangesAsync(cancellationToken);
         if (result < 0)
         {
-            return OperationResult<User?>.Failure("Failed to register user.", BaseErrorCodes.InternalError);
+            return OperationResult<UserDto?>.Failure("Failed to register user.", BaseErrorCodes.InternalError);
         }
 
         Logger.LogInformation("User {UserId} registered successfully", newUser.Id);
-        return OperationResult<User?>.Success(newUser);
+        return OperationResult<UserDto?>.Success(Mapper.Map<User, UserDto>(newUser));
     }
 
     /// <summary>

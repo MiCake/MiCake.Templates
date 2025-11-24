@@ -3,6 +3,7 @@ using StandardWeb.Web.Dtos.Identity;
 using StandardWeb.Application.Services.Auth;
 using StandardWeb.Web.Constants;
 using StandardWeb.Contracts.Dtos.Identity;
+using MiCake.AspNetCore.Uow;
 
 namespace StandardWeb.Web.Controllers
 {
@@ -25,6 +26,22 @@ namespace StandardWeb.Web.Controllers
             _logger = logger;
 
             ModuleCode = ModuleCodes.AuthModule;
+        }
+
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [UnitOfWork]    // ensure the db operations are atomic
+        public async Task<IActionResult> Register([FromBody] UserRegistrationDto request)
+        {
+            _logger.LogInformation("Registering user with phone number: {PhoneNumber}", request.PhoneNumber);
+
+            var result = await _authService.RegisterAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.ErrorCode ?? AuthErrorCodes.InvalidOperation, result.ErrorMessage);
+            }
+
+            return Ok(result.Data);
         }
 
         /// <summary>

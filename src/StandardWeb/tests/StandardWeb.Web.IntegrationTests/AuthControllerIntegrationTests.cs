@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
-using System.Net.Http.Json;
 using StandardWeb.Contracts.Dtos.Identity;
 using StandardWeb.Web.Dtos.Identity;
 
@@ -11,7 +10,7 @@ namespace StandardWeb.Web.IntegrationTests;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {

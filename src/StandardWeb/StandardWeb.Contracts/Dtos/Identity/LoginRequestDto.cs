@@ -1,5 +1,3 @@
-using System;
-
 namespace StandardWeb.Contracts.Dtos.Identity;
 
 public class LoginRequestDto

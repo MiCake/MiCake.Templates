@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\StandardWeb.Application\StandardWeb.Application.csproj" />
-    <ProjectReference Include="..\..\StandardWeb.Common\StandardWeb.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
