@@ -49,7 +49,6 @@ public static class StartUpServiceExtension
         return services;
     }
 
-
     public static IServiceCollection AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
     {
         var rawOrigins = configuration.GetValue<string>("AllowedOrigins");

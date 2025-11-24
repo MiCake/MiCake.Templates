@@ -1,7 +1,6 @@
-using System.Reflection;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using StandardWeb.Common.Auth;
+using StandardWeb.Application;
 
 namespace StandardWeb.Web.StartUp;
 
@@ -13,13 +12,13 @@ public static class WebServiceRegistration
     /// <summary>
     /// Registers the baseline MVC + validation + mapping stack for the API host.
     /// </summary>
-    public static IServiceCollection AddWebApiDefaults(this IServiceCollection services, IConfiguration configuration, Assembly webAssembly)
+    public static IServiceCollection AddWebApiDefaults(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
 
         services.AddOpenApi();
-        services.AddAutoMapper(webAssembly);
-        services.AddValidatorsFromAssembly(webAssembly);
+        services.AddAutoMapper([typeof(WebModule).Assembly, typeof(ApplicationModule).Assembly]);
+        services.AddValidatorsFromAssembly(typeof(WebModule).Assembly);
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
         services.RegisterOptions(configuration);
@@ -31,16 +30,16 @@ public static class WebServiceRegistration
     /// <summary>
     /// Registers strongly typed options from configuration for the API host.
     /// </summary>
-    public static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        // JWT configuration
-        services.Configure<JwtConfigOptions>(configuration.GetSection("Jwt"));
+        // Add additional option registrations here as needed
 
         return services;
     }
 
-    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    private static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
+        // Add additional core service registrations here as needed
         services.AddScoped<InfrastructureTools>();
 
         return services;

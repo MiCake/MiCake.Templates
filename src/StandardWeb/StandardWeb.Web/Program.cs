@@ -19,7 +19,7 @@ try
     builder.Host.UseSerilog();
 
     // Register core API services: controllers, validation, AutoMapper, OpenAPI
-    builder.Services.AddWebApiDefaults(builder.Configuration, typeof(Program).Assembly);
+    builder.Services.AddWebApiDefaults(builder.Configuration);
     builder.Services.AddNpgsql<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
 
     // Initialize MiCake framework with application module and DbContext
