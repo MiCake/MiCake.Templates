@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\StandardWeb.Domain\StandardWeb.Domain.csproj" />
+    <ProjectReference Include="..\..\StandardWeb.Application\StandardWeb.Application.csproj" />
     <ProjectReference Include="..\..\StandardWeb.Common\StandardWeb.Common.csproj" />
   </ItemGroup>
 
