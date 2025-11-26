@@ -61,7 +61,7 @@ namespace StandardWeb.Web.Controllers
                 return BadRequest(loginResult.ErrorCode ?? AuthErrorCodes.InvalidInput, loginResult.ErrorMessage);
             }
 
-            return Ok(loginResult);
+            return Ok(loginResult.Data);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace StandardWeb.Web.Controllers
                 return BadRequest(result.ErrorCode ?? BaseErrorCodes.InvalidOperation, result.ErrorMessage);
             }
 
-            return Ok(result);
+            return Ok(result.Data);
         }
     }
 }

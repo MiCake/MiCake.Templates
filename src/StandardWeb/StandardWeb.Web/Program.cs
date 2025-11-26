@@ -5,6 +5,7 @@ using StandardWeb.Domain;
 using StandardWeb.Web;
 using StandardWeb.Web.StartUp;
 using MiCake.Core;
+using StandardWeb.Common.Time;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,15 @@ try
     builder.Services.AddNpgsql<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
 
     // Initialize MiCake framework with application module and DbContext
-    builder.Services.AddMiCakeWithDefault<WebModule, AppDbContext>().Build();
+    builder.Services.AddMiCakeWithDefault<WebModule, AppDbContext>(
+        opt =>
+        {
+            opt.AuditConfig = audit =>
+            {
+                audit.AuditTimeProvider = () => TimeNow.Now;
+            };
+        }
+    ).Build();
 
     builder.Services.RegisterHttpClients(builder.Configuration);
     builder.Services.AddJWTAuthentication(builder.Configuration);
@@ -34,7 +43,11 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
-        app.MapScalarApiReference();
+        app.MapScalarApiReference(opt =>
+        {
+            opt.AddPreferredSecuritySchemes("BearerAuth")
+            .AddHttpAuthentication("BearerAuth", scheme => scheme.Token = "");
+        });
     }
 
     app.MapControllers();

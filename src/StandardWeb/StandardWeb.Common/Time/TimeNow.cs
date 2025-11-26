@@ -13,5 +13,5 @@ public class TimeNow
     /// <summary>
     /// Gets the current local date and time.
     /// </summary>
-    public static DateTime Now { get => DateTime.Now; }
+    public static DateTime Now { get => DateTime.UtcNow; }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StandardWeb.Contracts.Dtos.Identity;
 using StandardWeb.Domain.Models.Identity;
@@ -11,6 +12,7 @@ namespace StandardWeb.Web.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : BaseApiController
     {
         private readonly IUserRepo _userRepo;
