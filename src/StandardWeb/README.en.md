@@ -105,6 +105,8 @@ Mapping configurations should be placed close to the types and boundaries they s
 - Methods with business logic should be placed in Application layer services; Web layer only handles request processing and response return.
 - Simple queries can directly call repositories in Web layer for processing and return, but complex business logic should be encapsulated in Application layer.
 
+Allow the Web layer to directly call repositories in extremely simple, pure read scenarios (no business rules, no transactions, no cross-aggregates) to improve efficiency; any scenarios with business logic, transactions, cross-aggregate coordination, or requiring reuse must go through the Application layer or dedicated Query/Read services.
+
 ### Examples
 - Simple query by Id for User can directly call repository in Web layer:
 ```csharp
@@ -173,3 +175,28 @@ public class InventoryController : BaseApiController
 - When business logic is complex, prioritize encapsulating logic in Application layer services to keep Web layer simple and single-responsibility.
 - Maintain clear module boundaries, avoid chaotic cross-layer dependencies, improve system maintainability and scalability, facilitating future evolution into a complete microservice architecture.
 - Utilize unit tests and integration tests reasonably to ensure correctness and stability of each layer.
+
+### Using MiCake Provided Features
+MiCake provides many very practical features that can maximize avoiding reinventing the wheel and improve development efficiency. It is recommended to directly use MiCake's provided features to implement common requirements.
+
+#### Pagination and Dynamic Queries
+Pagination queries are often used in modern web projects. When the repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination query functionality. You can directly use `PagingQueryAsync` and `CommonFilterPagingQueryAsync` to implement pagination and dynamic queries:
+When a DTO object implements the `IDynamicQueryObj` interface, you can directly use the `GenerateFilterGroup` method to generate dynamic query conditions. For example:
+
+```csharp
+[DynamicFilterJoin(JoinType = FilterJoinType.And)]
+public class QueryUserListDto : IDynamicQueryObj
+{
+    [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
+    public string? PhoneNumber { get; set; }
+
+    [DynamicFilter(OperatorType = ValueOperatorType.Equal, PropertyName = "Status")]  
+    public UserStatus UserStatus { get; set; } = UserStatus.Active;
+}
+
+// QueryUserListDto generates the corresponding dynamic query conditions: PhoneNumber.StartsWith(value) AND Status == UserStatus.Active, handed over to EFCore for processing
+
+var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+```
+
+Usually, simple conditional filtering can be implemented using the `IDynamicQueryObj` method. If there are more complex query conditions, you can choose to manually build `FilterGroup` or `CompositeFilterGroup` objects to implement dynamic query condition construction. For details, refer to the MiCake documentation.

@@ -105,6 +105,8 @@ Contracts 层 (`StandardWeb.Contracts`) 的主要用途是放置跨进程/跨项
 - 具有业务逻辑的方法应放在 Application 层的服务中，Web 层仅负责请求处理与响应返回。
 - 简单的查询可以直接在Web层调用仓储进行处理和返回，但复杂业务逻辑应封装在 Application 层。
 
+允许 Web 层在极其简单、纯读取（无业务规则、无事务、无跨聚合）的场景中直接调用仓储以提高效率；任何带有业务逻辑、事务、跨聚合协调或需复用的场景，必须通过 Application 层或专用的 Query/Read 服务来实现。
+
 ### 示例
 + 简单根据Id来查询User，可以直接在Web层调用仓储：
 ```csharp
@@ -173,3 +175,28 @@ public class InventoryController : BaseApiController
 + 在业务逻辑复杂时，优先考虑将逻辑封装在 Application 层的服务中，保持 Web 层的简洁和职责单一。
 + 保持模块边界清晰，避免跨层依赖混乱，提升系统的可维护性和扩展性。便于未来演进为完善的微服务架构。
 + 合理利用单元测试和集成测试，确保各层功能的正确性和稳定性。
+
+### 用MiCake所提供的功能
+MiCake提供了很多非常实用的功能，可以最大化的避免重复造轮子，提升开发效率。建议直接使用MiCake所提供的功能来实现常见需求。
+
+#### 分页查询和动态查询
+分页查询通常会在现代Web项目中经常被使用。当仓储接口继承自`IRepositoryHasPagingQuery`时，会提供分页查询的功能。可以直接使用`PagingQueryAsync`和`CommonFilterPagingQueryAsync`来实现分页查询和动态查询的功能：
+当一个DTO对象实现了`IDynamicQueryObj`接口时，可以直接使用`GenerateFilterGroup`方法来生成动态查询条件。例如：
+
+```csharp
+[DynamicFilterJoin(JoinType = FilterJoinType.And)]
+public class QueryUserListDto : IDynamicQueryObj
+{
+    [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
+    public string? PhoneNumber { get; set; }
+
+    [DynamicFilter(OperatorType = ValueOperatorType.Equal, PropertyName = "Status")]  
+    public UserStatus UserStatus { get; set; } = UserStatus.Active;
+}
+
+// QueryUserListDto 会生成对应的动态查询条件： PhoneNumber.StartsWith(value) AND Status == UserStatus.Active 交给EFCore处理
+
+var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+```
+
+通常简单的条件过滤可以使用`IDynamicQueryObj`的方式来实现，如果有更复杂的查询条件，可以选择手动构建`FilterGroup`或者`CompositeFilterGroup`对象来实现动态查询条件的构建。具体可以参考 MiCake 文档。

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using StandardWeb.Web.Dtos.Identity;
 using StandardWeb.Application.Services.Auth;
-using StandardWeb.Web.Constants;
 using StandardWeb.Contracts.Dtos.Identity;
 using MiCake.AspNetCore.Uow;
 

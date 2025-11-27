@@ -1,9 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StandardWeb.Contracts.Dtos.Identity;
 using StandardWeb.Domain.Models.Identity;
 using StandardWeb.Domain.Repositories;
-using StandardWeb.Web.Constants;
+using StandardWeb.Web.Dtos.Identity;
 
 namespace StandardWeb.Web.Controllers
 {
@@ -12,7 +11,6 @@ namespace StandardWeb.Web.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class UserController : BaseApiController
     {
         private readonly IUserRepo _userRepo;
@@ -44,6 +42,15 @@ namespace StandardWeb.Web.Controllers
 
             var userDto = Mapper.Map<User, UserDto>(user);
             return Ok(userDto);
+        }
+
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetUsersByPaging(int pageIndex, int pageSize, [FromQuery] QueryUserListDto query)
+        {
+            _logger.LogInformation("Retrieving users for page {PageIndex} with size {PageSize}", pageIndex, pageSize);
+
+            var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+            return Ok(MappingPagingDto<User, UserDto>(pagedUsers));
         }
     }
 }

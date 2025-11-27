@@ -16,6 +16,10 @@ This is a **MiCake-based ASP.NET Core 10.0 DDD template** (StandardWeb) providin
 
 ## Key Patterns
 
+### DDD Design
++ Only create `IRepository` interfaces for aggregate roots in the Domain layer.
++ Entities or value objects should be updated through domain services or aggregate root methods to enforce business rules. **Direct updates from outside the aggregate are prohibited**.
+
 ### Service Registration with `[InjectService]`
 MiCake auto-registers services decorated with `[InjectService]`. No manual DI registration needed:
 ```csharp
@@ -51,7 +55,7 @@ public class AuthController : BaseApiController
 - Format: `{ModuleCode}.{ErrorCode}` (e.g., `01.9900`)
 
 ### OperationResult Pattern
-Services return `OperationResult<T>` for explicit success/failure handling:
+Services return `OperationResult<T>` for explicit success/failure handling in **application layer**:
 ```csharp
 public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto data)
 {
@@ -66,6 +70,39 @@ Repositories extend MiCake's `EFRepository` with the domain's `AppDbContext`:
 public abstract class BaseRepository<TAggregateRoot> 
     : EFRepository<AppDbContext, TAggregateRoot, long> { }
 ```
+
+### Pagination and Dynamic Queries
+- Use classes under the namespace `MiCake.Util.Query.Paging` to implement pagination: `PagingRequest`, `PagingResponse<T>`.
+
+- **Pagination Queries**: When a repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination functionality. Use `PagingQueryAsync` for basic pagination or `CommonFilterPagingQueryAsync` for pagination with dynamic filters.
+
+- **Dynamic Queries**: Create DTOs that implement `IDynamicQueryObj` and use attributes like `[DynamicFilter]` to automatically generate query conditions. The `GenerateFilterGroup()` method builds the filter group for EF Core.
+
+Example:
+```csharp
+// DTO for dynamic filtering
+[DynamicFilterJoin(JoinType = FilterJoinType.And)]
+public class QueryUserListDto : IDynamicQueryObj
+{
+    [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
+    public string? PhoneNumber { get; set; }
+
+    [DynamicFilter(OperatorType = ValueOperatorType.Equal, PropertyName = "Status")]
+    public UserStatus UserStatus { get; set; } = UserStatus.Active;
+}
+
+// Controller usage
+[HttpGet("paged")]
+public async Task<IActionResult> GetUsersByPaging(int pageIndex, int pageSize, [FromQuery] QueryUserListDto query)
+{
+    var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(
+        new PagingRequest(pageIndex, pageSize), 
+        query.GenerateFilterGroup());
+    return Ok(MappingPagingDto<User, UserDto>(pagedUsers));
+}
+```
+
+For complex queries, manually build `FilterGroup` or `CompositeFilterGroup` objects. 
 
 ### DTO Placement Guidelines
 The Contracts layer (`StandardWeb.Contracts`) is primarily for placing shared data contracts (DTOs) and public interfaces across processes/projects:
