@@ -10,6 +10,8 @@ namespace StandardWeb.Domain.Models.Identity;
 /// </summary>
 public class ExternalLoginProvider : AuditEntity
 {
+    public long UserId { get; private set; }
+
     /// <summary>
     /// Login provider type (WeChat, Alipay, Apple, etc.)
     /// </summary>
@@ -84,11 +86,11 @@ public class ExternalLoginProvider : AuditEntity
     /// </summary>
     public DateTime? UnboundTime { get; private set; }
 
+
     #region Navigation Properties
-    public long UserId { get; private set; }
+
+    public User User { get; private set; } = null!;
     
-    [ForeignKey(nameof(UserId))]
-    public User User { get; private set; } = null!; 
     #endregion
 
     protected ExternalLoginProvider() { }
@@ -111,7 +113,7 @@ public class ExternalLoginProvider : AuditEntity
             ProviderUnionId = providerUnionId,
             NickName = nickName,
             AvatarUrl = avatarUrl,
-            AccessToken = accessToken, // For WeChat, store session_key in AccessToken
+            AccessToken = accessToken,
             BindTime = TimeNow.Now,
             IsUnbound = false
         };

@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using StandardWeb.Application.Models;
 using StandardWeb.Web.Dtos.Identity;
 using StandardWeb.Application.Services.Auth;
+using StandardWeb.Contracts.Dtos.Identity;
+using MiCake.AspNetCore.Uow;
 
 namespace StandardWeb.Web.Controllers
 {
+    /// <summary>
+    /// Handles authentication operations including login and token refresh.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : BaseApiController
@@ -23,36 +27,59 @@ namespace StandardWeb.Web.Controllers
             ModuleCode = ModuleCodes.AuthModule;
         }
 
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [UnitOfWork]    // ensure the db operations are atomic
+        public async Task<IActionResult> Register([FromBody] UserRegistrationDto request)
+        {
+            _logger.LogInformation("Registering user with phone number: {PhoneNumber}", request.PhoneNumber);
+
+            var result = await _authService.RegisterAsync(request);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.ErrorCode ?? AuthErrorCodes.InvalidOperation, result.ErrorMessage);
+            }
+
+            return Ok(result.Data);
+        }
+
+        /// <summary>
+        /// Authenticates a user with phone number and password.
+        /// Returns JWT access token and refresh token on successful authentication.
+        /// </summary>
         [HttpPost("login")]
-        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
-            var loginResult = await _authService.LoginAsync(new UserLoginModel
-            {
-                PhoneNumber = request.PhoneNumber,
-                Password = request.Password
-            });
+            _logger.LogInformation("Login attempt for phone number: {PhoneNumber}", request.PhoneNumber);
+
+            var loginResult = await _authService.LoginAsync(request);
 
             if (!loginResult.IsSuccess)
             {
-                return BadRequest(loginResult.ErrorCode ?? ErrorCodeDefinition.OperationFailed, loginResult.ErrorMessage);
+                return BadRequest(loginResult.ErrorCode ?? AuthErrorCodes.InvalidInput, loginResult.ErrorMessage);
             }
 
-            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(loginResult.Data));
+            return Ok(loginResult.Data);
         }
 
+        /// <summary>
+        /// Refreshes an expired access token using a valid refresh token.
+        /// Returns new JWT access token and refresh token pair.
+        /// </summary>
         [HttpPost("token/refresh")]
-        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
         {
-            var result = await _authService.RefreshTokenAsync(request.RefreshToken);
+            _logger.LogInformation("Token refresh attempt with refresh token: {RefreshToken}", request.RefreshToken);
 
+            var result = await _authService.RefreshTokenAsync(request.RefreshToken);
             if (!result.IsSuccess)
             {
-                return BadRequest(result.ErrorCode ?? ErrorCodeDefinition.OperationFailed, result.ErrorMessage);
+                return BadRequest(result.ErrorCode ?? BaseErrorCodes.InvalidOperation, result.ErrorMessage);
             }
 
-            return Ok(Mapper.Map<UserLoginResult, LoginResponseDto>(result.Data));
+            return Ok(result.Data);
         }
     }
 }
