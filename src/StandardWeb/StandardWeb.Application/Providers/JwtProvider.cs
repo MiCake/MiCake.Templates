@@ -14,7 +14,7 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
 
     public JwtTokenModel GenerateToken(User user, List<Claim> claims)
     {
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);

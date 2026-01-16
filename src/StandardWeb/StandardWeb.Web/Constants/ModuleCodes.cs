@@ -4,7 +4,7 @@ namespace StandardWeb.Web.Constants;
 /// Module code prefixes for error code categorization.
 /// Each module has a unique two-digit identifier that prefixes error codes.
 /// </summary>
-public class ModuleCodes
+public static class ModuleCodes
 {
     /// <summary>
     /// Authentication and authorization module (login, token refresh)

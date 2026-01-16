@@ -64,40 +64,47 @@ public static class StartUpServiceExtension
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                if (allowAnyOrigin)
-                {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                    return;
-                }
-
-                if (strictOrigins.Length > 0)
-                {
-                    builder.WithOrigins(strictOrigins);
-                }
-
-                if (wildcardOrigins.Length > 0)
-                {
-                    // Allow wildcard hostnames (e.g. https://*.contoso.com) without exposing the app to arbitrary origins.
-                    builder.SetIsOriginAllowed(origin =>
-                    {
-                        if (strictOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-
-                        return wildcardOrigins.Any(pattern => MatchesWildcardOrigin(pattern, origin));
-                    });
-                }
-
-                builder.AllowAnyMethod()
-                       .AllowAnyHeader()
-                       .AllowCredentials();
+                ConfigureCorsPolicy(builder, allowAnyOrigin, strictOrigins, wildcardOrigins);
             });
         });
 
         return services;
+    }
+
+    private static void ConfigureCorsPolicy(Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder builder, bool allowAnyOrigin, string[] strictOrigins, string[] wildcardOrigins)
+    {
+        if (allowAnyOrigin)
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+            return;
+        }
+
+        if (strictOrigins.Length > 0)
+        {
+            builder.WithOrigins(strictOrigins);
+        }
+
+        if (wildcardOrigins.Length > 0)
+        {
+            // Allow wildcard hostnames (e.g. https://*.contoso.com) without exposing the app to arbitrary origins.
+            builder.SetIsOriginAllowed(origin => IsOriginAllowed(origin, strictOrigins, wildcardOrigins));
+        }
+
+        builder.AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    }
+
+    private static bool IsOriginAllowed(string origin, string[] strictOrigins, string[] wildcardOrigins)
+    {
+        if (strictOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return wildcardOrigins.Any(pattern => MatchesWildcardOrigin(pattern, origin));
     }
 
     private static bool MatchesWildcardOrigin(string pattern, string origin)

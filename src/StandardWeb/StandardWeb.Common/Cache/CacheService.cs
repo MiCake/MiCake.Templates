@@ -53,7 +53,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        if (value == null)
+        if (value is null)
         {
             await RemoveAsync(key, cancellationToken);
             return;
@@ -117,7 +117,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         ArgumentNullException.ThrowIfNull(factory);
 
         var cachedValue = await GetAsync<T>(key, cancellationToken);
-        if (cachedValue != null)
+        if (cachedValue is not null)
         {
             return cachedValue;
         }
@@ -127,7 +127,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         {
             var newValue = await factory();
 
-            if (newValue != null)
+            if (newValue is not null)
             {
                 await SetAsync(key, newValue, expiration, cancellationToken);
             }
@@ -189,7 +189,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        if (value == null)
+        if (value is null)
         {
             Remove(key);
             return;
@@ -253,7 +253,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         ArgumentNullException.ThrowIfNull(factory);
 
         var cachedValue = Get<T>(key);
-        if (cachedValue != null)
+        if (cachedValue is not null)
         {
             return cachedValue;
         }
@@ -263,7 +263,7 @@ public class CacheService(IDistributedCache distributedCache, ILogger<CacheServi
         {
             var newValue = factory();
 
-            if (newValue != null)
+            if (newValue is not null)
             {
                 Set(key, newValue, expiration);
             }

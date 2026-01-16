@@ -5,9 +5,8 @@ namespace StandardWeb.Application.Cache;
 /// </summary>
 public static class CacheKeys
 {
-
-    // Example cache keys
-    // public const string UserById = "User:ById:{0}";
+    // Example cache keys: 
+    // public const string UserById = "User:{0}";
 
     /// <summary>
     /// returns a timestamped cache key

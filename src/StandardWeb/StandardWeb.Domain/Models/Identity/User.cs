@@ -189,7 +189,7 @@ public class User : AuditAggregateRoot
     {
         ArgumentNullException.ThrowIfNull(externalLogin);
         if (string.IsNullOrWhiteSpace(externalLogin.ProviderKey) || externalLogin.ProviderType == default)
-            throw new ArgumentException("Provider key cannot be empty", nameof(externalLogin.ProviderKey));
+            throw new ArgumentException("Provider key cannot be empty");
 
         var existing = _externalLogins.FirstOrDefault(e => e.ProviderType == externalLogin.ProviderType && e.ProviderKey == externalLogin.ProviderKey);
 
@@ -236,7 +236,7 @@ public class User : AuditAggregateRoot
     {
         ArgumentNullException.ThrowIfNull(userToken);
         if (string.IsNullOrWhiteSpace(userToken.Value))
-            throw new ArgumentException("Token value cannot be empty", nameof(userToken.Value));
+            throw new ArgumentException("Token value cannot be empty");
 
         var existing = _userTokens.FirstOrDefault(t => t.Type == userToken.Type && !t.HasExpired());
 

@@ -7,7 +7,7 @@ namespace StandardWeb.Common.Helpers;
 /// Provides utilities for handling different text encodings and compression.
 /// Particularly useful for HTTP responses with various character sets.
 /// </summary>
-public class EncodingHelper
+public static class EncodingHelper
 {
     /// <summary>
     /// Decompresses GZIP-compressed stream to string.

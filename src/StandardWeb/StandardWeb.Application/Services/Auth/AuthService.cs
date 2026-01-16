@@ -35,7 +35,7 @@ public class AuthService : BaseLoginService
         Logger.LogInformation("Registering user with phone number: {PhoneNumber}", data.PhoneNumber);
 
         // Validate phone number format (Chinese mobile format)
-        if (FormatChecker.IsValidPhoneNumber(data.PhoneNumber) == false)
+        if (!FormatChecker.IsValidPhoneNumber(data.PhoneNumber))
         {
             return OperationResult<UserDto?>.Failure("Invalid phone number format.", BaseErrorCodes.InvalidInput);
         }
@@ -109,7 +109,7 @@ public class AuthService : BaseLoginService
         }
 
         // Validate OTP code if provided (placeholder for actual OTP validation)
-        if (user.ForceOTPOnLogin && string.IsNullOrWhiteSpace(data.OtpCode) == false)
+        if (user.ForceOTPOnLogin && !string.IsNullOrWhiteSpace(data.OtpCode))
         {
             // TODO: Implement actual OTP validation logic here
         }

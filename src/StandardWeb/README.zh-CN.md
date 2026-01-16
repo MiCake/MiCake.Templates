@@ -1,5 +1,7 @@
 # StandardWeb 模板说明
 
+**中文** | [English](README.en.md)
+
 StandardWeb 是基于 MiCake 框架构建的一个开箱即用的 ASP.NET Core 10.0 + DDD 模板。它把常见的 Web 服务组成部分（认证、日志、EF Core、映射等）分层封装，便于快速上手并在企业场景中扩展。
 
 ## 架构概览
@@ -35,20 +37,13 @@ src/StandardWeb
 ## 快速开始（3 分钟上手）
 下面是快速体验模板的最小步骤。模板默认使用 PostgreSQL（Npgsql），并通过 `Program.cs` 中的 AddNpgsql 注册 DbContext。
 
-1) 克隆并切换到模板目录
+1) 构建解决方案
 
 ```powershell
-cd src/StandardWeb
-dotnet restore
+dotnet build
 ```
 
-2) 构建解决方案
-
-```powershell
-dotnet build StandardWeb.sln
-```
-
-3) 配置（开发环境）
+2) 配置（开发环境）
 
 - 在 `StandardWeb.Web/appsettings.Development.json` 或环境变量中设置：
     - `ConnectionStrings:DefaultConnection` → PostgreSQL 连接字符串
@@ -56,7 +51,7 @@ dotnet build StandardWeb.sln
     - `AllowedOrigins` → 用于 CORS，逗号分隔，支持 `https://*.example.com` 通配
 - 在 `tools\EfCoreMigrationApp\appsettings.json` 中配置数据库连接字符串用于数据库生成和迁移
 
-4) 应用 EF Core 迁移并初始化数据库
+3) 应用 EF Core 迁移并初始化数据库
 
 ```powershell
 cd tools\EfCoreMigrationApp
@@ -64,11 +59,11 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-5) 运行项目
+4) 运行项目
 
 - 启动 `StandardWeb.Web` 项目
 
-6) 查看运行效果（开发时）
+5) 查看运行效果（开发时）
 
 在开发环境运行时，会默认启用 OpenAPI/Scalar 文档（Program.cs 中控制）；当运行`StandardWeb.Web`后，默认会跳转到 `http://localhost:<port>/scalar/v1` 来查看接口和参考文档。
 
@@ -180,12 +175,12 @@ public class InventoryController : BaseApiController
 MiCake提供了很多非常实用的功能，可以最大化的避免重复造轮子，提升开发效率。建议直接使用MiCake所提供的功能来实现常见需求。
 
 #### 分页查询和动态查询
-分页查询通常会在现代Web项目中经常被使用。当仓储接口继承自`IRepositoryHasPagingQuery`时，会提供分页查询的功能。可以直接使用`PagingQueryAsync`和`CommonFilterPagingQueryAsync`来实现分页查询和动态查询的功能：
-当一个DTO对象实现了`IDynamicQueryObj`接口时，可以直接使用`GenerateFilterGroup`方法来生成动态查询条件。例如：
+分页查询通常会在现代Web项目中经常被使用。当仓储接口继承自`IRepositoryHasPagingQuery`时，会提供分页查询的功能。可以直接使用`FilterQueryAsync`和`FilterPagingQueryAsync`来实现分页查询和动态查询的功能：
+当一个DTO对象实现了`IDynamicQueryModel`接口时，可以直接使用`GenerateFilterGroup`方法来生成动态查询条件。例如：
 
 ```csharp
 [DynamicFilterJoin(JoinType = FilterJoinType.And)]
-public class QueryUserListDto : IDynamicQueryObj
+public class QueryUserListDto : IDynamicQueryModel
 {
     [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
     public string? PhoneNumber { get; set; }
@@ -196,7 +191,7 @@ public class QueryUserListDto : IDynamicQueryObj
 
 // QueryUserListDto 会生成对应的动态查询条件： PhoneNumber.StartsWith(value) AND Status == UserStatus.Active 交给EFCore处理
 
-var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+var pagedUsers = await _userRepo.FilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
 ```
 
-通常简单的条件过滤可以使用`IDynamicQueryObj`的方式来实现，如果有更复杂的查询条件，可以选择手动构建`FilterGroup`或者`CompositeFilterGroup`对象来实现动态查询条件的构建。具体可以参考 MiCake 文档。
+通常简单的条件过滤可以使用`IDynamicQueryModel`的方式来实现，如果有更复杂的查询条件，可以选择手动构建`FilterGroup`或者`CompositeFilterGroup`对象来实现动态查询条件的构建。具体可以参考 MiCake 文档。

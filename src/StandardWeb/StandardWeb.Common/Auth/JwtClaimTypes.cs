@@ -4,7 +4,7 @@ namespace StandardWeb.Common.Auth
     /// Defines standard JWT claim type names used throughout the application.
     /// Ensures consistent claim naming across token generation and validation.
     /// </summary>
-    public class JwtClaimTypes
+    public static class JwtClaimTypes
     {
         /// <summary>
         /// Claim type for user ID (primary key).

@@ -17,7 +17,7 @@ public static class WebServiceRegistration
         services.AddControllers();
 
         services.AddOpenApi();
-        services.AddAutoMapper([typeof(WebModule).Assembly, typeof(ApplicationModule).Assembly]);
+        services.AddAutoMapper(typeof(WebModule).Assembly, typeof(ApplicationModule).Assembly);
         services.AddValidatorsFromAssembly(typeof(WebModule).Assembly);
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
@@ -33,7 +33,7 @@ public static class WebServiceRegistration
     private static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
         // Add additional option registrations here as needed
-
+        
         return services;
     }
 
