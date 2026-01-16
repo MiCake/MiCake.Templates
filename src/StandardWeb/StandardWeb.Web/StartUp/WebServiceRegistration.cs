@@ -1,9 +1,6 @@
-using System.Reflection;
-using CommonWebLib.StartUp;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using StandardWeb.Common.Auth;
+using StandardWeb.Application;
 
 namespace StandardWeb.Web.StartUp;
 
@@ -15,18 +12,13 @@ public static class WebServiceRegistration
     /// <summary>
     /// Registers the baseline MVC + validation + mapping stack for the API host.
     /// </summary>
-    public static IServiceCollection AddWebApiDefaults(this IServiceCollection services, IConfiguration configuration, Assembly webAssembly)
+    public static IServiceCollection AddWebApiDefaults(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
 
-        services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.InvalidModelStateResponseFactory = CustomModelStateResponseFactory.CreateResponse;
-        });
-
         services.AddOpenApi();
-        services.AddAutoMapper(webAssembly);
-        services.AddValidatorsFromAssembly(webAssembly);
+        services.AddAutoMapper([typeof(WebModule).Assembly, typeof(ApplicationModule).Assembly]);
+        services.AddValidatorsFromAssembly(typeof(WebModule).Assembly);
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
         services.RegisterOptions(configuration);
@@ -36,14 +28,19 @@ public static class WebServiceRegistration
     }
 
     /// <summary>
-    /// Binds strongly typed configuration sections that other layers expect.
+    /// Registers strongly typed options from configuration for the API host.
     /// </summary>
-    public static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<AESEncryptionOptions>()
-            .Bind(configuration.GetSection("AESEncryption"))
-            .Validate(o => !string.IsNullOrWhiteSpace(o.Key), "AESEncryption:Key must be configured.")
-            .ValidateOnStart();
+        // Add additional option registrations here as needed
+
+        return services;
+    }
+
+    private static IServiceCollection AddCoreServices(this IServiceCollection services)
+    {
+        // Add additional core service registrations here as needed
+        services.AddScoped<InfrastructureTools>();
 
         return services;
     }

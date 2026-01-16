@@ -3,13 +3,13 @@
     "author": "MiCake Team",
     "classifications": [
         "Web",
-        "StandardWeb",
+        "WebAPI",
         "MiCake"
     ],
-    "identity": "MiCake.StandardWeb.Template",
-    "name": "MiCake Standard Web Template",
-    "shortName": "micake-standardweb",
-    "sourceName": "StandardWeb",
+    "identity": "MiCake.WebAPI.Template",
+    "name": "MiCake WebAPI Template",
+    "shortName": "micake-webapi",
+    "sourceName": "WebAPI",
     "tags": {
         "language": "C#",
         "type": "project"

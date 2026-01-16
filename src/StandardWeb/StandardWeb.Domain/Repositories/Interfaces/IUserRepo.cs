@@ -1,4 +1,4 @@
-using MiCake.DDD.Extensions.Paging;
+using MiCake.DDD.Domain;
 using Microsoft.EntityFrameworkCore.Query;
 using StandardWeb.Domain.Enums.Identity;
 using StandardWeb.Domain.Models.Identity;
@@ -13,11 +13,11 @@ public interface IUserRepo : IRepositoryHasPagingQuery<User, long>
 
     Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IIncludableQueryable<User, object>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
 
-    #region Query for inner entities which does not need to be tracked by efcore
+    #region Query for inner entities
 
-    Task<User?> FindByExternalLoginAsync(LoginProviderType providerType, string providerKey, CancellationToken cancellationToken = default);
-    Task<User?> FindByProviderUnionIdAsync(string providerUnionId, CancellationToken cancellationToken = default);
+    Task<User?> FindByExternalLoginAsync(LoginProviderType providerType, string providerKey, bool needTracking = true, CancellationToken cancellationToken = default);
+    Task<User?> FindByProviderUnionIdAsync(string providerUnionId, bool needTracking = true, CancellationToken cancellationToken = default);
 
-    Task<User?> FindByUserTokenAsync(UserTokenType tokenType, string tokenValue, CancellationToken cancellationToken = default);
+    Task<User?> FindByUserTokenAsync(UserTokenType tokenType, string tokenValue, bool needTracking = true, CancellationToken cancellationToken = default);
     #endregion
 }

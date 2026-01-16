@@ -3,8 +3,17 @@ using System.Text;
 
 namespace StandardWeb.Common.Helpers;
 
+/// <summary>
+/// Provides utilities for handling different text encodings and compression.
+/// Particularly useful for HTTP responses with various character sets.
+/// </summary>
 public class EncodingHelper
 {
+    /// <summary>
+    /// Decompresses GZIP-compressed stream to string.
+    /// </summary>
+    /// <param name="compressedData">GZIP-compressed data stream</param>
+    /// <returns>Decompressed string content (UTF-8)</returns>
     public static string DecodeGzip(Stream compressedData)
     {
         using var decompressionStream = new GZipStream(compressedData, CompressionMode.Decompress);
@@ -13,22 +22,26 @@ public class EncodingHelper
     }
 
     /// <summary>
-    /// 安全读取HTTP响应内容，处理编码问题
+    /// Safely reads HTTP response content with automatic encoding detection.
+    /// Falls back to manual byte-level decoding if standard reading fails.
     /// </summary>
+    /// <param name="response">HTTP response message to read</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Response content as string</returns>
     public static async Task<string> ReadResponseSafelyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         try
         {
-            // First try to read as string with default encoding
+            // Attempt standard string reading with default encoding
             var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
             return responseText;
         }
         catch (Exception)
         {
-            // If that fails due to encoding issues, read as bytes and decode manually
+            // Handle encoding issues by reading raw bytes and decoding manually
             var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
 
-            // Try to detect encoding from Content-Type header
+            // Extract encoding from Content-Type header
             var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
             var encoding = GetEncodingFromContentType(contentType);
 
@@ -37,13 +50,16 @@ public class EncodingHelper
     }
 
     /// <summary>
-    /// 从Content-Type头中提取编码信息
+    /// Extracts character encoding from Content-Type header.
+    /// Supports common encodings: UTF-8, GB2312, GBK, Big5, ISO-8859-1.
     /// </summary>
-    private static System.Text.Encoding GetEncodingFromContentType(string contentType)
+    /// <param name="contentType">Content-Type header value</param>
+    /// <returns>Detected encoding or UTF-8 as fallback</returns>
+    private static Encoding GetEncodingFromContentType(string contentType)
     {
         try
         {
-            // Look for charset parameter in Content-Type
+            // Look for charset parameter in Content-Type header
             var charsetIndex = contentType.IndexOf("charset=", StringComparison.OrdinalIgnoreCase);
             if (charsetIndex >= 0)
             {
@@ -53,7 +69,7 @@ public class EncodingHelper
 
                 var charset = contentType.Substring(charsetStart, charsetEnd - charsetStart).Trim();
 
-                // Common charset mappings
+                // Map common charset names to .NET Encoding objects
                 return charset.ToLowerInvariant() switch
                 {
                     "utf-8" => Encoding.UTF8,
@@ -61,54 +77,15 @@ public class EncodingHelper
                     "gbk" => Encoding.GetEncoding("GBK"),
                     "big5" => Encoding.GetEncoding("Big5"),
                     "iso-8859-1" => Encoding.Latin1,
-                    _ => Encoding.UTF8 // Default fallback
+                    _ => Encoding.UTF8 // Default fallback for unknown charsets
                 };
             }
         }
         catch (Exception)
         {
-            // If encoding detection fails, fall back to UTF-8
+            // Silently fall back to UTF-8 if encoding detection fails
         }
 
         return Encoding.UTF8;
-    }
-
-    /// <summary>
-    /// 检测字节数组的编码格式
-    /// </summary>
-    private static System.Text.Encoding DetectEncoding(byte[] bytes)
-    {
-        // Check for BOM
-        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
-            return Encoding.UTF8;
-
-        if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE)
-            return Encoding.Unicode;
-
-        if (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF)
-            return Encoding.BigEndianUnicode;
-
-        // For Chinese content, try GB2312/GBK if UTF-8 detection fails
-        try
-        {
-            var utf8String = Encoding.UTF8.GetString(bytes);
-            // If UTF-8 decoding produces valid content, use it
-            if (!utf8String.Contains('\uFFFD')) // No replacement characters
-                return Encoding.UTF8;
-        }
-        catch
-        {
-            // UTF-8 failed, try GB2312
-        }
-
-        // Default to GB2312 for Chinese financial data
-        try
-        {
-            return Encoding.GetEncoding("GB2312");
-        }
-        catch
-        {
-            return Encoding.UTF8; // Final fallback
-        }
     }
 }

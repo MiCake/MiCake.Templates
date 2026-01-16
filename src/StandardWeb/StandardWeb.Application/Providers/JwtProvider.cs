@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using MiCake.Core.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StandardWeb.Common.Auth;
@@ -15,7 +14,7 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
 
     public JwtTokenModel GenerateToken(User user, List<Claim> claims)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user), "User cannot be null.");
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
 
         var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);

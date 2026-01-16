@@ -10,8 +10,9 @@ namespace StandardWeb.Domain.Models.Identity;
 /// </summary>
 public class UserToken : AuditEntity
 {
+    public long UserId { get; private set; }
+
     [Required]
-    [MaxLength(100)]
     public UserTokenType Type { get; private set; }
 
     [Required]
@@ -20,13 +21,11 @@ public class UserToken : AuditEntity
     public DateTime? ExpiryDate { get; private set; }
 
     #region Navigation Properties
-    public long UserId { get; private set; }
 
-    [ForeignKey(nameof(UserId))]
     public User User { get; private set; } = null!;
+
     #endregion
 
-    // Required by EF Core
     protected UserToken() { }
 
     public static UserToken Create(UserTokenType type, string value, DateTime? expiryDate = null)

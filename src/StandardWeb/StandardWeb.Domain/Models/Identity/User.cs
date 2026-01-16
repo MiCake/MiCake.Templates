@@ -193,7 +193,7 @@ public class User : AuditAggregateRoot
 
         var existing = _externalLogins.FirstOrDefault(e => e.ProviderType == externalLogin.ProviderType && e.ProviderKey == externalLogin.ProviderKey);
 
-        if (existing != null)
+        if (existing is not null)
         {
             if (!existing.IsUnbound)
             {
@@ -240,9 +240,8 @@ public class User : AuditAggregateRoot
 
         var existing = _userTokens.FirstOrDefault(t => t.Type == userToken.Type && !t.HasExpired());
 
-        if (existing != null)
+        if (existing is not null)
         {
-            // Update existing valid token
             existing.UpdateValue(userToken.Value);
             existing.SetExpiry(userToken.ExpiryDate ?? TimeNow.Now.AddHours(24)); // Default 24 hours if not specified
             return true;

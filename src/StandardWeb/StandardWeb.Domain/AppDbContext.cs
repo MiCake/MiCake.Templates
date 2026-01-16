@@ -10,13 +10,13 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
     public DbSet<User> User { get; set; }
     public DbSet<UserLoginHistory> UserLoginHistory { get; set; }
-    public DbSet<ExternalLoginProvider> ExternalLoginProviders { get; set; }
-    public DbSet<UserToken> UserTokens { get; set; }
 
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        #region Identity Module
+
         modelBuilder.Entity<User>(builder =>
         {
             builder.HasIndex(x => x.PhoneNumber).IsUnique();
@@ -26,13 +26,13 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
         {
             builder.HasIndex(x => new { x.UserId, x.ProviderType, x.ProviderKey }).IsUnique();
             builder.HasIndex(x => x.ProviderKey);
-            builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            builder.HasOne(x => x.User).WithMany(u => u.ExternalLogins).HasForeignKey(x => x.UserId);
         });
 
         modelBuilder.Entity<UserToken>(builder =>
         {
             builder.HasIndex(x => new { x.UserId, x.Type }).IsUnique();
-            builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            builder.HasOne(x => x.User).WithMany(u => u.UserTokens).HasForeignKey(x => x.UserId);
         });
 
         modelBuilder.Entity<UserLoginHistory>(builder =>
@@ -41,6 +41,9 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
             builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
 
+        #endregion
+
+        // Call base method to configure MiCake modules.
         base.OnModelCreating(modelBuilder);
     }
 }
