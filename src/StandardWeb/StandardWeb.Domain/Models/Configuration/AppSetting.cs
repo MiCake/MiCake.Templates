@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using StandardWeb.Domain.Enums.Configuration;
-using StandardWeb.Domain.Models.Configuration.Events;
 
 namespace StandardWeb.Domain.Models.Configuration;
 
@@ -63,15 +62,6 @@ public class AppSetting : AuditAggregateRoot
     /// Factory method to create a new AppSetting.
     /// Validates all parameters and optional validation pattern.
     /// </summary>
-    /// <param name="settingGroup">Setting group (Email, Sms, etc.)</param>
-    /// <param name="key">Unique key within the group</param>
-    /// <param name="value">Value (already encrypted if isEncrypted=true)</param>
-    /// <param name="dataType">Data type for parsing</param>
-    /// <param name="isEncrypted">Whether value is encrypted</param>
-    /// <param name="description">Optional description</param>
-    /// <param name="validationPattern">Optional regex pattern for validation</param>
-    /// <returns>New AppSetting instance</returns>
-    /// <exception cref="ArgumentException">If parameters are invalid</exception>
     public static AppSetting Create(
         SettingGroup settingGroup,
         string key,
@@ -107,8 +97,6 @@ public class AppSetting : AuditAggregateRoot
             ValidationPattern = validationPattern
         };
 
-        // Validate pattern if provided (validation should be done in Application layer before creation)
-        // This is a safety check
         if (!string.IsNullOrEmpty(validationPattern) && !setting.ValidateValue(value))
         {
             throw new ArgumentException(
@@ -139,9 +127,6 @@ public class AppSetting : AuditAggregateRoot
         }
 
         Value = newValue;
-
-        // TODO: Raise domain event for cache invalidation and audit
-        // Will be implemented when domain event infrastructure is ready
     }
 
     /// <summary>

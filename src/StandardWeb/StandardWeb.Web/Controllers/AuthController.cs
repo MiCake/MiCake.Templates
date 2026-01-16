@@ -54,7 +54,6 @@ namespace StandardWeb.Web.Controllers
             _logger.LogInformation("Login attempt for phone number: {PhoneNumber}", request.PhoneNumber);
 
             var loginResult = await _authService.LoginAsync(request);
-
             if (!loginResult.IsSuccess)
             {
                 return BadRequest(loginResult.ErrorCode ?? AuthErrorCodes.InvalidInput, loginResult.ErrorMessage);

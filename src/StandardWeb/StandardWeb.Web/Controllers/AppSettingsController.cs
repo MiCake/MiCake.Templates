@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MiCake.AspNetCore.Uow;
 using StandardWeb.Application.Services.Configuration;
 using StandardWeb.Contracts.Dtos.Configuration;
 using StandardWeb.Domain.Enums.Configuration;
@@ -31,25 +30,18 @@ public class AppSettingsController : BaseApiController
     /// Gets all settings in a specific group.
     /// </summary>
     /// <param name="settingGroup">Setting group name (Email, Sms, Payment, etc.)</param>
-    /// <param name="ct">Cancellation token</param>
     /// <returns>List of settings with metadata</returns>
     [HttpGet("{settingGroup}")]
     [ProducesResponseType(typeof(List<AppSettingDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetGroupSettings(
-        string settingGroup,
-        CancellationToken ct)
+    public async Task<IActionResult> GetGroupSettings(string settingGroup)
     {
         _logger.LogInformation("Getting settings for group: {Group}", settingGroup);
 
         if (!Enum.TryParse<SettingGroup>(settingGroup, ignoreCase: true, out var group))
-            return BadRequest("INVALID_GROUP", $"Invalid setting group: {settingGroup}");
+            return BadRequest(ConfigurationErrorCodes.GroupNotFound, $"Invalid setting group: {settingGroup}");
 
-        var result = await _service.GetGroupSettingsAsync(group, ct);
-
-        if (!result.IsSuccess)
-            return BadRequest(result.ErrorCode, result.ErrorMessage);
-
-        return Ok(result.Data);
+        var result = await _service.GetGroupSettingsAsync(group, HttpCancellationToken);
+        return Ok(result);
     }
 
     /// <summary>
@@ -57,28 +49,20 @@ public class AppSettingsController : BaseApiController
     /// </summary>
     /// <param name="settingGroup">Setting group name</param>
     /// <param name="key">Setting key</param>
-    /// <param name="ct">Cancellation token</param>
     /// <returns>Setting with metadata</returns>
     [HttpGet("{settingGroup}/{key}")]
     [ProducesResponseType(typeof(AppSettingDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetSetting(
-        string settingGroup,
-        string key,
-        CancellationToken ct)
+    public async Task<IActionResult> GetSetting(string settingGroup, string key)
     {
         _logger.LogInformation("Getting setting: {Group}/{Key}", settingGroup, key);
 
         if (!Enum.TryParse<SettingGroup>(settingGroup, ignoreCase: true, out var group))
-            return BadRequest("INVALID_GROUP", $"Invalid setting group: {settingGroup}");
+            return BadRequest(ConfigurationErrorCodes.GroupNotFound, $"Invalid setting group: {settingGroup}");
 
-        var result = await _service.GetSettingAsync(group, key, ct);
-
+        var result = await _service.GetSettingWithoutCacheAsync(group, key, HttpCancellationToken);
         if (!result.IsSuccess)
         {
-            if (result.ErrorCode == ConfigurationErrorCodes.SettingNotFound)
-                return NotFound();
-
-            return BadRequest(result.ErrorCode ?? "ERROR", result.ErrorMessage);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
 
         return Ok(result.Data);
@@ -88,24 +72,35 @@ public class AppSettingsController : BaseApiController
     /// Creates a new configuration setting.
     /// </summary>
     /// <param name="dto">Setting creation data</param>
-    /// <param name="ct">Cancellation token</param>
     /// <returns>Created setting</returns>
     [HttpPost]
     [ProducesResponseType(typeof(AppSettingDto), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateSetting([FromBody] CreateAppSettingDto dto, CancellationToken ct)
+    public async Task<IActionResult> CreateSetting([FromBody] CreateAppSettingDto dto)
     {
         _logger.LogInformation("Creating setting: {Group}/{Key}", dto.SettingGroup, dto.Key);
 
-        var result = await _service.CreateSettingAsync(dto, ct);
+        var result = await _service.CreateSettingAsync(dto, HttpCancellationToken);
 
         if (!result.IsSuccess)
-            return BadRequest(result.ErrorCode ?? "ERROR", result.ErrorMessage);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
 
-        // Return 201 Created with location header
-        return CreatedAtAction(
-            nameof(GetSetting),
-            new { settingGroup = dto.SettingGroup, key = dto.Key },
-            result.Data);
+        return Ok(result.Data);
+    }
+
+    /// <summary>
+    /// Batch upserts (creates or updates) multiple settings in a single group.
+    /// </summary>
+    [HttpPost("batch")]
+    [ProducesResponseType(typeof(BatchUpsertResultDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> BatchUpsertSettings([FromBody] BatchUpsertAppSettingsDto dto)
+    {
+        _logger.LogInformation("Batch upserting {Count} settings for group: {Group}", dto.Settings?.Count ?? 0, dto.SettingGroup);
+
+        var result = await _service.BatchUpsertSettingsAsync(dto, HttpCancellationToken);
+        if (!result.IsSuccess)
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
+
+        return Ok(result.Data);
     }
 
     /// <summary>
@@ -114,16 +109,10 @@ public class AppSettingsController : BaseApiController
     /// <param name="settingGroup">Setting group name</param>
     /// <param name="key">Setting key</param>
     /// <param name="dto">Update data</param>
-    /// <param name="ct">Cancellation token</param>
     /// <returns>Success or error</returns>
     [HttpPut("{settingGroup}/{key}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateSetting(
-        string settingGroup,
-        string key,
-        [FromBody] UpdateAppSettingDto dto,
-        CancellationToken ct)
+    public async Task<IActionResult> UpdateSetting(string settingGroup, string key, [FromBody] UpdateAppSettingDto dto)
     {
         _logger.LogInformation("Updating setting: {Group}/{Key}", settingGroup, key);
 
@@ -131,20 +120,16 @@ public class AppSettingsController : BaseApiController
         if (!dto.SettingGroup.Equals(settingGroup, StringComparison.OrdinalIgnoreCase) ||
             !dto.Key.Equals(key, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest("PARAMETER_MISMATCH", "Route parameters must match request body");
+            return BadRequest(ConfigurationErrorCodes.InvalidInput, "Route parameters must match request body");
         }
 
-        var result = await _service.UpdateSettingAsync(dto, ct);
-
+        var result = await _service.UpdateSettingAsync(dto, HttpCancellationToken);
         if (!result.IsSuccess)
         {
-            if (result.ErrorCode == ConfigurationErrorCodes.SettingNotFound)
-                return NotFound();
-
-            return BadRequest(result.ErrorCode ?? "ERROR", result.ErrorMessage);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
 
-        return Ok(new { message = "Setting updated successfully" });
+        return Ok(true);
     }
 
     /// <summary>
@@ -152,64 +137,22 @@ public class AppSettingsController : BaseApiController
     /// </summary>
     /// <param name="settingGroup">Setting group name</param>
     /// <param name="key">Setting key</param>
-    /// <param name="ct">Cancellation token</param>
     /// <returns>Success or error</returns>
     [HttpDelete("{settingGroup}/{key}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [UnitOfWork]
-    public async Task<IActionResult> DeleteSetting(
-        string settingGroup,
-        string key,
-        CancellationToken ct)
+    public async Task<IActionResult> DeleteSetting(string settingGroup, string key)
     {
         _logger.LogInformation("Deleting setting: {Group}/{Key}", settingGroup, key);
 
         if (!Enum.TryParse<SettingGroup>(settingGroup, ignoreCase: true, out var group))
-            return BadRequest("INVALID_GROUP", $"Invalid setting group: {settingGroup}");
+            return BadRequest(ConfigurationErrorCodes.InvalidInput, $"Invalid setting group: {settingGroup}");
 
-        var result = await _service.DeleteSettingAsync(group, key, ct);
-
+        var result = await _service.DeleteSettingAsync(group, key, HttpCancellationToken);
         if (!result.IsSuccess)
         {
-            if (result.ErrorCode == ConfigurationErrorCodes.SettingNotFound)
-                return NotFound();
-
-            if (result.ErrorCode == ConfigurationErrorCodes.CannotDeleteRequiredSetting)
-                return BadRequest(result.ErrorCode, result.ErrorMessage);
-
-            return BadRequest(result.ErrorCode ?? "ERROR", result.ErrorMessage);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
 
         return Ok(new { message = "Setting deleted successfully" });
-    }
-
-    /// <summary>
-    /// Invalidates cache for a specific setting group.
-    /// Useful for forcing cache refresh after bulk updates.
-    /// </summary>
-    /// <param name="settingGroup">Setting group name</param>
-    /// <param name="ct">Cancellation token</param>
-    /// <returns>Success message</returns>
-    [HttpPost("{settingGroup}/invalidate-cache")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InvalidateCache(
-        string settingGroup,
-        CancellationToken ct)
-    {
-        _logger.LogInformation("Invalidating cache for group: {Group}", settingGroup);
-
-        if (!Enum.TryParse<SettingGroup>(settingGroup, ignoreCase: true, out var group))
-            return BadRequest("INVALID_GROUP", $"Invalid setting group: {settingGroup}");
-
-        await _service.InvalidateCacheAsync(group, ct);
-
-        return Ok(new { message = "Cache invalidated successfully" });
-    }
-
-    private long? GetCurrentUserId()
-    {
-        var userIdClaim = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        return long.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 }

@@ -89,7 +89,7 @@ public class ExternalLoginProvider : AuditEntity
     #region Navigation Properties
 
     public User User { get; private set; } = null!;
-    
+
     #endregion
 
     protected ExternalLoginProvider() { }

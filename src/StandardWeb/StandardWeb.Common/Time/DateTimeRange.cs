@@ -16,7 +16,7 @@ public class DateTimeRange
     public required DateTime EndDate { get; set; }
 
     public DateTimeRange(DateTime startDate, DateTime endDate)
-    {       
+    {
         if (endDate < startDate)
             throw new ArgumentException("End date must be greater than or equal to start date.", nameof(endDate));
 

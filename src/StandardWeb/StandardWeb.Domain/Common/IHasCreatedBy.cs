@@ -1,5 +1,3 @@
-using System;
-
 namespace StandardWeb.Domain.Common;
 
 public interface IHasCreatedBy

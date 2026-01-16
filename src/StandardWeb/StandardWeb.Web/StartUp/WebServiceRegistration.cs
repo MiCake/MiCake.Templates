@@ -33,7 +33,7 @@ public static class WebServiceRegistration
     private static IServiceCollection RegisterOptions(this IServiceCollection services, IConfiguration configuration)
     {
         // Add additional option registrations here as needed
-        
+
         return services;
     }
 

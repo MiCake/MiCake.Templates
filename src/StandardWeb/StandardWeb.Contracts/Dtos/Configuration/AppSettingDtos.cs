@@ -44,3 +44,34 @@ public record UpdateAppSettingDto(
 public record UpdateAppSettingMetadataDto(
     string? Description,
     string? ValidationPattern);
+
+/// <summary>
+/// DTO for batch upsert (create or update) settings in a single group.
+/// </summary>
+public record BatchUpsertAppSettingsDto(
+    string SettingGroup,        // All settings must belong to this group
+    List<BatchSettingItemDto> Settings);
+
+/// <summary>
+/// Individual setting item for batch operations.
+/// </summary>
+public record BatchSettingItemDto(
+    string Key,
+    string Value,
+    string DataType,            // Required for create, ignored for update
+    string? Description = null,
+    bool IsEncrypted = false,
+    string? ValidationPattern = null);
+
+/// <summary>
+/// Result of batch upsert operation.
+/// </summary>
+public record BatchUpsertResultDto
+{
+    public string SettingGroup { get; set; } = string.Empty;
+    public int TotalProcessed { get; set; }
+    public int Created { get; set; }
+    public int Updated { get; set; }
+    public int Failed { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
