@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "releases/preview*"
+  workflow_dispatch: # Allow manual trigger for emergency releases
 
 # Prevent concurrent preview releases
 concurrency:
