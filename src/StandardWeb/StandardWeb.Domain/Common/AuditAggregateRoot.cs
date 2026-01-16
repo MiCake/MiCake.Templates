@@ -8,13 +8,13 @@ namespace StandardWeb.Domain.Common;
 /// Automatically tracks creation and modification times and actors.
 /// Inherits from MiCake AggregateRoot with long ID type.
 /// </summary>
-public class AuditAggregateRoot : AggregateRoot<long>, IHasCreatedAt, IHasUpdatedAt
+public class AuditAggregateRoot : AggregateRoot<long>, IHasCreatedAt, IHasUpdatedAt, IHasCreatedBy, IHasModifiedBy
 {
     /// <summary>
     /// Identifier of the user or system that created this entity.
     /// </summary>
     [MaxLength(50)]
-    public string CreatedBy { get; set; } = string.Empty;
+    public long? CreatedBy { get; set; }
 
     /// <summary>
     /// Timestamp when this entity was created.
@@ -25,7 +25,7 @@ public class AuditAggregateRoot : AggregateRoot<long>, IHasCreatedAt, IHasUpdate
     /// Identifier of the user or system that last modified this entity.
     /// </summary>
     [MaxLength(50)]
-    public string? ModifiedBy { get; set; }
+    public long? ModifiedBy { get; set; }
 
     /// <summary>
     /// Timestamp of the last modification to this entity.

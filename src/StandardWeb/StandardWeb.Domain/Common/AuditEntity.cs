@@ -3,15 +3,15 @@ using MiCake.Audit;
 
 namespace StandardWeb.Domain.Common;
 
-public class AuditEntity : Entity<long>, IHasCreatedAt, IHasUpdatedAt
+public class AuditEntity : Entity<long>, IHasCreatedAt, IHasUpdatedAt, IHasCreatedBy, IHasModifiedBy
 {
     [MaxLength(50)]
-    public string CreatedBy { get; set; } = string.Empty;
+    public long? CreatedBy { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
     [MaxLength(50)]
-    public string? ModifiedBy { get; set; }
+    public long? ModifiedBy { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
