@@ -3,106 +3,15 @@
     "author": "MiCake Team",
     "classifications": [
         "Web",
-        "StandardWeb",
+        "WebAPI",
         "MiCake"
     ],
-    "identity": "MiCake.StandardWeb.Template",
-    "name": "MiCake Standard Web Template",
-    "shortName": "micake-sd-web",
-    "sourceName": "StandardWeb",
+    "identity": "MiCake.WebAPI.Template",
+    "name": "MiCake WebAPI Template",
+    "shortName": "micake-webapi",
+    "sourceName": "WebAPI",
     "tags": {
         "language": "C#",
         "type": "project"
-    },
-    "symbols": {
-        "EnableAIAgent": {
-            "type": "parameter",
-            "datatype": "bool",
-            "description": "Whether to enable AI Agent feature. When enabled, AI Agent code will be downloaded from GitHub and integrated into your project.",
-            "displayName": "Enable AI Agent",
-            "defaultValue": "false"
-        },
-        "HostIdentifier": {
-            "type": "bind",
-            "binding": "HostIdentifier"
-        }
-    },
-    "sources": [
-        {
-            "modifiers": [
-                {
-                    "condition": "(!EnableAIAgent)",
-                    "exclude": [
-                        ".scripts/**"
-                    ]
-                }
-            ]
-        }
-    ],
-    "postActions": [
-        {
-            "id": "run-ai-agent-setup-windows",
-            "condition": "(EnableAIAgent && OS == \"Windows_NT\")",
-            "description": "Downloading and integrating AI Agent from GitHub...",
-            "manualInstructions": [
-                {
-                    "text": "To enable AI Agent manually, run: powershell -ExecutionPolicy Bypass -File .scripts\\setup-ai-agent.ps1  Or download from: https://github.com/MiCake/MiCake.AI.Agent"
-                }
-            ],
-            "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
-            "args": {
-                "executable": "powershell.exe",
-                "args": "-NoProfile -ExecutionPolicy Bypass -File .scripts\\setup-ai-agent.ps1"
-            },
-            "continueOnError": true
-        },
-        {
-            "id": "run-ai-agent-setup-unix",
-            "condition": "(EnableAIAgent && OS != \"Windows_NT\")",
-            "description": "Downloading and integrating AI Agent from GitHub...",
-            "manualInstructions": [
-                {
-                    "text": "To enable AI Agent manually, run: bash .scripts/setup-ai-agent.sh  Or download from: https://github.com/MiCake/MiCake.AI.Agent"
-                }
-            ],
-            "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
-            "args": {
-                "executable": "/bin/bash",
-                "args": ".scripts/setup-ai-agent.sh"
-            },
-            "continueOnError": true
-        },
-        {
-            "id": "cleanup-scripts-windows",
-            "condition": "(EnableAIAgent && OS == \"Windows_NT\")",
-            "description": "Cleaning up setup scripts...",
-            "manualInstructions": [
-                {
-                    "text": "You can delete the .scripts folder after setup is complete."
-                }
-            ],
-            "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
-            "args": {
-                "executable": "powershell.exe",
-                "args": "-NoProfile -Command \"Remove-Item -Path '.scripts' -Recurse -Force -ErrorAction SilentlyContinue\""
-            },
-            "continueOnError": true
-        },
-        {
-            "id": "cleanup-scripts-unix",
-            "condition": "(EnableAIAgent && OS != \"Windows_NT\")",
-            "description": "Cleaning up setup scripts...",
-            "manualInstructions": [
-                {
-                    "text": "You can delete the .scripts folder after setup is complete."
-                }
-            ],
-            "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
-            "args": {
-                "executable": "/bin/bash",
-                "args": "-c \"rm -rf .scripts\""
-            },
-            "continueOnError": true
-        }
-    ]
+    }
 }

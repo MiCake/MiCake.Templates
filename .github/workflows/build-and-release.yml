@@ -1,0 +1,288 @@
+name: Build, Test and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      push_to_nuget:
+        description: "Push packages to NuGet.org (ensure version is correct)"
+        required: true
+        type: boolean
+        default: false
+      create_release:
+        description: "Create GitHub Release and Git Tag"
+        required: true
+        type: boolean
+        default: false
+      version_tag:
+        description: "Version tag (e.g., 1.0.0) - Required for release"
+        required: false
+        type: string
+        default: ""
+
+# Prevent concurrent releases
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Explicit permissions for security
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  checks: write
+  id-token: write
+
+env:
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION }}
+  BUILD_CONFIGURATION: "Release"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract and validate version
+        id: version
+        run: |
+          # Use input version if provided
+          if [ -n "${{ github.event.inputs.version_tag }}" ]; then
+            FINAL_VERSION="${{ github.event.inputs.version_tag }}"
+            echo "Using manually specified version: $FINAL_VERSION"
+          else
+            # Extract version from MiCake.Templates.csproj
+            PROPS_VERSION=$(grep -oP '(?<=<PackageVersion>)[^<]+' MiCake.Templates.csproj || echo "1.0.0")
+            FINAL_VERSION="$PROPS_VERSION"
+            echo "Using version from MiCake.Templates.csproj: $FINAL_VERSION"
+          fi
+          
+          # Validate version format (must be x.x.x)
+          if [[ ! "$FINAL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version '$FINAL_VERSION' must match pattern x.x.x (e.g., 1.0.0)"
+            echo "Prerelease suffixes like '-preview1' are not allowed for releases."
+            exit 1
+          fi
+          
+          echo "version=$FINAL_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$FINAL_VERSION" >> $GITHUB_OUTPUT
+          echo "::notice ::Release version: $FINAL_VERSION (tag: v$FINAL_VERSION)"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Cache NuGet packages for faster builds
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Discover and verify templates
+        id: discover_templates
+        run: |
+          echo "Discovering template projects in src/..."
+          
+          # Find all template.json files
+          TEMPLATE_CONFIGS=$(find src -name "template.json" -path "*/.template.config/template.json")
+          
+          if [ -z "$TEMPLATE_CONFIGS" ]; then
+            echo "Error: No template.json files found in src/"
+            exit 1
+          fi
+          
+          TEMPLATE_COUNT=0
+          TEMPLATE_PATHS=""
+          
+          # Verify each template
+          for template_config in $TEMPLATE_CONFIGS; do
+            TEMPLATE_DIR=$(dirname $(dirname "$template_config"))
+            TEMPLATE_NAME=$(basename "$TEMPLATE_DIR")
+            
+            echo "Found template: $TEMPLATE_NAME at $TEMPLATE_DIR"
+            
+            # Validate template.json is valid JSON
+            if ! jq . "$template_config" > /dev/null 2>&1; then
+              echo "Error: $template_config is not valid JSON"
+              exit 1
+            fi
+            
+            # Extract shortName for verification
+            SHORT_NAME=$(jq -r '.shortName // "unknown"' "$template_config")
+            echo "  - Short name: $SHORT_NAME"
+            
+            TEMPLATE_PATHS="$TEMPLATE_PATHS $TEMPLATE_DIR"
+            TEMPLATE_COUNT=$((TEMPLATE_COUNT + 1))
+          done
+          
+          echo "template_paths=$TEMPLATE_PATHS" >> $GITHUB_OUTPUT
+          echo "template_count=$TEMPLATE_COUNT" >> $GITHUB_OUTPUT
+          echo "::notice ::Discovered $TEMPLATE_COUNT template(s)"
+
+      - name: Restore dependencies
+        run: |
+          echo "Restoring dependencies for all template projects..."
+          
+          # Restore each template project
+          for template_dir in ${{ steps.discover_templates.outputs.template_paths }}; do
+            echo "Restoring: $template_dir"
+            
+            # Find solution file in template directory
+            SLN_FILE=$(find "$template_dir" -maxdepth 1 -name "*.sln" | head -n 1)
+            
+            if [ -n "$SLN_FILE" ]; then
+              dotnet restore "$SLN_FILE"
+            else
+              echo "Warning: No solution file found in $template_dir, skipping restore"
+            fi
+          done
+
+      - name: Build
+        run: |
+          echo "Building all template projects..."
+          
+          # Build each template project
+          for template_dir in ${{ steps.discover_templates.outputs.template_paths }}; do
+            echo "Building: $template_dir"
+            
+            # Find solution file
+            SLN_FILE=$(find "$template_dir" -maxdepth 1 -name "*.sln" | head -n 1)
+            
+            if [ -n "$SLN_FILE" ]; then
+              dotnet build "$SLN_FILE" \
+                --configuration ${{ env.BUILD_CONFIGURATION }} \
+                --no-restore
+            else
+              echo "Warning: No solution file found in $template_dir, skipping build"
+            fi
+          done
+
+      # Create single template package containing all templates
+      - name: Pack template NuGet package
+        run: |
+          mkdir -p ./artifacts
+          
+          echo "Packing single NuGet package with ${{ steps.discover_templates.outputs.template_count }} template(s)..."
+          
+          # Pack the template using the existing csproj
+          # This creates ONE package containing ALL templates from src/
+          dotnet pack ./MiCake.Templates.csproj \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --output ./artifacts \
+            -p:PackageVersion=${{ steps.version.outputs.version }}
+          
+          echo "::notice ::Created single package with ${{ steps.discover_templates.outputs.template_count }} template(s)"
+
+      # Get a short-lived NuGet API key using OIDC
+      - name: NuGet login (OIDC → temp API key)
+        if: github.event.inputs.push_to_nuget == 'true'
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to NuGet.org
+        if: github.event.inputs.push_to_nuget == 'true'
+        run: |
+          for package in ./artifacts/*.nupkg; do
+            echo "Pushing $package..."
+            dotnet nuget push "$package" \
+              --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
+
+      - name: Upload NuGet packages as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/*.nupkg
+          retention-days: 90
+
+      # Create Git tag and GitHub Release
+      - name: Create Git Tag
+        if: github.event.inputs.create_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "micake_bot@users.noreply.github.com"
+          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.version }}"
+          git push origin ${{ steps.version.outputs.tag }}
+
+      - name: Create GitHub Release
+        if: github.event.inputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: MiCake.Templates ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          body: |
+            ## MiCake.Templates ${{ steps.version.outputs.version }}
+            
+            Production-ready project templates for MiCake DDD framework.
+            
+            ### 📥 Installation
+            
+            ```bash
+            dotnet new install MiCake.Templates::${{ steps.version.outputs.version }}
+            ```
+            
+            ### 🎯 Create a new project
+            
+            ```bash
+            # Create a new MiCake Web API project
+            dotnet new micake-webapi -n YourProjectName
+            ```
+            
+            ### 📦 Package Contents
+            
+            This package contains **${{ steps.discover_templates.outputs.template_count }}** template(s).
+            
+            Use `dotnet new list micake` after installation to see all available templates.
+            
+            ### 📖 Documentation
+            
+            Visit [MiCake Framework](https://github.com/MiCake/MiCake) for full documentation.
+            
+            ---
+            
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/*.nupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release summary
+        run: |
+          echo "## 🎉 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ steps.version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Templates Count** | \`${{ steps.discover_templates.outputs.template_count }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Push to NuGet** | \`${{ github.event.inputs.push_to_nuget }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Create Release** | \`${{ github.event.inputs.create_release }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for pkg in ./artifacts/*.nupkg; do
+            pkgname=$(basename "$pkg" .nupkg)
+            echo "- \`$pkgname\`" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 Installation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "dotnet new install MiCake.Templates::${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

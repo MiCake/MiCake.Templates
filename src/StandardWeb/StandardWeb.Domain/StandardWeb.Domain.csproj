@@ -4,7 +4,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MiCake.EntityFrameworkCore" Version="1.0.0-ci-20251123-045010" />
+    <PackageReference Include="MiCake.EntityFrameworkCore" Version="10.0.0-preview.5" />
   </ItemGroup>
   
   <ItemGroup>
