@@ -1,5 +1,6 @@
 ﻿using MiCake.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using StandardWeb.Domain.Models.Configuration;
 using StandardWeb.Domain.Models.Identity;
 
 namespace StandardWeb.Domain;
@@ -10,6 +11,12 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
     public DbSet<User> User { get; set; }
     public DbSet<UserLoginHistory> UserLoginHistory { get; set; }
+
+    #endregion
+
+    #region Configuration Module
+
+    public DbSet<AppSetting> AppSettings { get; set; }
 
     #endregion
 
@@ -39,6 +46,33 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
         {
             builder.HasIndex(x => x.RecordedAt);
             builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+        });
+
+        #endregion
+
+        #region Configuration Module
+
+        modelBuilder.Entity<AppSetting>(builder =>
+        {
+            builder.ToTable("AppSettings");
+            builder.HasKey(x => x.Id);
+
+            // Unique constraint on SettingGroup + Key
+            builder.HasIndex(x => new { x.SettingGroup, x.Key }).IsUnique();
+            builder.HasIndex(x => x.SettingGroup);
+            builder.HasIndex(x => x.UpdatedAt);
+
+            // Properties
+            builder.Property(x => x.SettingGroup).IsRequired();
+            builder.Property(x => x.Key).HasMaxLength(100).IsRequired();
+            builder.Property(x => x.Value).IsRequired();
+            builder.Property(x => x.DataType).IsRequired();
+            builder.Property(x => x.Description).HasMaxLength(500);
+            builder.Property(x => x.IsEncrypted).IsRequired();
+            builder.Property(x => x.ValidationPattern).HasMaxLength(500);
+
+            // Note: Audit fields (CreatedBy, CreatedAt, ModifiedBy, UpdatedAt) 
+            // are auto-configured by MiCake framework
         });
 
         #endregion

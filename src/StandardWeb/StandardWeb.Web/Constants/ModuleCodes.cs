@@ -15,4 +15,9 @@ public static class ModuleCodes
     /// User management module (registration, profile updates)
     /// </summary>
     public const string UserManagementModule = "02";
+
+    /// <summary>
+    /// Configuration management module (dynamic application settings)
+    /// </summary>
+    public const string ConfigurationModule = "05";
 }
