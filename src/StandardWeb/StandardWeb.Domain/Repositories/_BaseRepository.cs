@@ -1,4 +1,3 @@
-using MiCake.DDD.Domain;
 using MiCake.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
 

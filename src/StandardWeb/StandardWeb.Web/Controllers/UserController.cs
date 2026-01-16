@@ -49,7 +49,7 @@ namespace StandardWeb.Web.Controllers
         {
             _logger.LogInformation("Retrieving users for page {PageIndex} with size {PageSize}", pageIndex, pageSize);
 
-            var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+            var pagedUsers = await _userRepo.FilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
             return Ok(MappingPagingDto<User, UserDto>(pagedUsers));
         }
     }

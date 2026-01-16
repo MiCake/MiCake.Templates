@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using StandardWeb.Common.Time;
 using StandardWeb.Domain.Enums.Identity;
 
