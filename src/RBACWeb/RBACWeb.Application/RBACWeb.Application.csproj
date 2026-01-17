@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MiCake.AspNetCore" Version="10.0.0-preview.5" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RBACWeb.Contracts\RBACWeb.Contracts.csproj" />
+    <ProjectReference Include="..\RBACWeb.EFCore\RBACWeb.EFCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Audit\" />
+  </ItemGroup>
+
+</Project>

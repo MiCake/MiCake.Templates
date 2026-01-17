@@ -2,14 +2,13 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "MiCake Team",
     "classifications": [
-        "Web",
-        "WebAPI",
-        "MiCake"
+        "MiCake",
+        "WebAPI"
     ],
     "identity": "MiCake.WebAPI.Template",
     "name": "MiCake WebAPI Template",
     "shortName": "micake-webapi",
-    "sourceName": "WebAPI",
+    "sourceName": "StandardWeb",
     "tags": {
         "language": "C#",
         "type": "project"
