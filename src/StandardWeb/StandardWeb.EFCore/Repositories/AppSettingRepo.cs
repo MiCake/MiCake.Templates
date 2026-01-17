@@ -2,8 +2,9 @@ using MiCake.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
 using StandardWeb.Domain.Enums.Configuration;
 using StandardWeb.Domain.Models.Configuration;
+using StandardWeb.Domain.Repositories;
 
-namespace StandardWeb.Domain.Repositories;
+namespace StandardWeb.EFCore.Repositories;
 
 /// <summary>
 /// Repository implementation for AppSetting aggregate.

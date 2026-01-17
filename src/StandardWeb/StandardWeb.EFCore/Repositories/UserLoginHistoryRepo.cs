@@ -1,8 +1,9 @@
 using MiCake.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
 using StandardWeb.Domain.Models.Identity;
+using StandardWeb.Domain.Repositories;
 
-namespace StandardWeb.Domain.Repositories;
+namespace StandardWeb.EFCore.Repositories;
 
 public class UserLoginHistoryRepo : BasePagingRepository<UserLoginHistory>, IUserLoginHistoryRepo
 {

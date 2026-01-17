@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StandardWeb.Contracts\StandardWeb.Contracts.csproj" />
-    <ProjectReference Include="..\StandardWeb.Domain\StandardWeb.Domain.csproj" />
+    <ProjectReference Include="..\StandardWeb.EFCore\StandardWeb.EFCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

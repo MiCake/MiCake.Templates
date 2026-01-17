@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="MiCake.EntityFrameworkCore" Version="10.0.0-preview.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StandardWeb.Domain\StandardWeb.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

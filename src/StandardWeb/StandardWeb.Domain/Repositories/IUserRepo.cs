@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Query;
 using StandardWeb.Domain.Enums.Identity;
 using StandardWeb.Domain.Models.Identity;
 
@@ -8,9 +7,9 @@ public interface IUserRepo : IRepositoryHasPagingQuery<User, long>
 {
     Task<User?> GetByPhoneNumberAsync(string phoneNumber, bool needTracking = true, CancellationToken cancellationToken = default);
 
-    Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IIncludableQueryable<User, object>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
+    Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
 
-    Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IIncludableQueryable<User, object>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
+    Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
 
     #region Query for inner entities
 

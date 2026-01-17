@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
-using StandardWeb.Domain;
 using StandardWeb.Web;
 using StandardWeb.Web.StartUp;
 using MiCake.Core;
 using StandardWeb.Common.Time;
+using StandardWeb.EFCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

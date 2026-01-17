@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\StandardWeb.Domain\StandardWeb.Domain.csproj" />
+    <ProjectReference Include="..\..\StandardWeb.EFCore\StandardWeb.EFCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

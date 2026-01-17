@@ -1,7 +1,8 @@
+using MiCake.DDD.Domain;
 using MiCake.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
 
-namespace StandardWeb.Domain.Repositories;
+namespace StandardWeb.EFCore.Repositories;
 
 public abstract class BaseRepository<TAggregateRoot> : EFRepository<AppDbContext, TAggregateRoot, long>
     where TAggregateRoot : class, IAggregateRoot<long>

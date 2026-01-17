@@ -2,11 +2,11 @@ using MiCake.Audit.Core;
 using MiCake.Core.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using StandardWeb.Application.Audit;
-using StandardWeb.Domain;
+using StandardWeb.EFCore;
 
 namespace StandardWeb.Application;
 
-[RelyOn(typeof(DomainModule))]
+[RelyOn(typeof(EFCoreModule))]
 public class ApplicationModule : MiCakeModule
 {
     public override void ConfigureServices(ModuleConfigServiceContext context)

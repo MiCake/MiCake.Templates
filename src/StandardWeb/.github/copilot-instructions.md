@@ -11,6 +11,7 @@ This is a **MiCake-based ASP.NET Core 10.0 DDD template** (StandardWeb) providin
 | **Web** | `StandardWeb.Web` | Controllers, HTTP concerns, startup, validators |
 | **Application** | `StandardWeb.Application` | Services, providers, use-case orchestration |
 | **Domain** | `StandardWeb.Domain` | Aggregates, repositories, EF Core DbContext |
+| **Infrastructure (EF Core)** | `StandardWeb.EFCore` | Data access implementation: EF Core DbContext, repository implementations |
 | **Common** | `StandardWeb.Common` | Cross-cutting helpers (encryption, time, cache) |
 | **Contracts** | `StandardWeb.Contracts` | Shared DTOs for cross-service contracts |
 
@@ -74,15 +75,15 @@ public abstract class BaseRepository<TAggregateRoot>
 ### Pagination and Dynamic Queries
 - Use classes under the namespace `MiCake.Util.Query.Paging` to implement pagination: `PagingRequest`, `PagingResponse<T>`.
 
-- **Pagination Queries**: When a repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination functionality. Use `PagingQueryAsync` for basic pagination or `CommonFilterPagingQueryAsync` for pagination with dynamic filters.
+- **Pagination Queries**: When a repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination functionality. Use `PagingQueryAsync` for basic pagination or `FilterPagingQueryAsync` for pagination with dynamic filters.
 
-- **Dynamic Queries**: Create DTOs that implement `IDynamicQueryObj` and use attributes like `[DynamicFilter]` to automatically generate query conditions. The `GenerateFilterGroup()` method builds the filter group for EF Core.
+- **Dynamic Queries**: Create DTOs that implement `IDynamicQueryModel` and use attributes like `[DynamicFilter]` to automatically generate query conditions. The `GenerateFilterGroup()` method builds the filter group for EF Core.
 
 Example:
 ```csharp
 // DTO for dynamic filtering
 [DynamicFilterJoin(JoinType = FilterJoinType.And)]
-public class QueryUserListDto : IDynamicQueryObj
+public class QueryUserListDto : IDynamicQueryModel
 {
     [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
     public string? PhoneNumber { get; set; }
@@ -95,7 +96,7 @@ public class QueryUserListDto : IDynamicQueryObj
 [HttpGet("paged")]
 public async Task<IActionResult> GetUsersByPaging(int pageIndex, int pageSize, [FromQuery] QueryUserListDto query)
 {
-    var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(
+    var pagedUsers = await _userRepo.FilterPagingQueryAsync(
         new PagingRequest(pageIndex, pageSize), 
         query.GenerateFilterGroup());
     return Ok(MappingPagingDto<User, UserDto>(pagedUsers));
@@ -166,7 +167,7 @@ The Providers path is used for placing services with single responsibilities or 
 
 ## Adding a New Feature (Recommended Process)
 1. Define entities, aggregates, and repository interfaces in `StandardWeb.Domain`;
-2. Add repository implementation in `StandardWeb.Domain`, and register/configure EF Core entities in `AppDbContext`;
+2. Add repository implementation in `StandardWeb.EFCore`, and register/configure EF Core entities in `AppDbContext`;
 3. Implement business logic (use-cases) in `StandardWeb.Application/Services/<Feature>/`, and write AutoMapper Profiles in Application layer;
 4. Define error codes in `StandardWeb.Application\ErrorCodes` (if needed);
 5. Define cross-service shared DTOs and interfaces in `StandardWeb.Contracts` (if needed);

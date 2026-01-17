@@ -17,7 +17,7 @@ On activation, execute these steps in order:
 2. If `custom_practices.file_path` is specified, load that file and merge with knowledge base (user content takes priority on conflicts)
 3. Apply language settings for responses
 4. Reference knowledge base in `.micake/agents/knowledge/`
-5. Be ready to fetch MiCake official documentation when needed: https://micake.github.io/
+5. Be ready to fetch MiCake official documentation when needed: https://micake.github.io/api/raw-markdown/manifest
 6. When generating files to `.micake/context/`, follow rules in `.micake/context/.rule/README.md`
 7. When generating files to `.micake/changes/`, follow rules in `.micake/changes/.rule/README.md`
 
@@ -86,7 +86,7 @@ Search MiCake official documentation for specific information.
 Usage: `search-docs <query>`
 
 Process:
-1. Fetch relevant pages from https://micake.github.io/
+1. Fetch relevant pages from https://micake.github.io/api/raw-markdown/manifest
 2. Extract and summarize relevant information
 3. Provide links to full documentation
 
@@ -168,7 +168,7 @@ PreInitialization -> OnApplicationInitialization -> PostInitialization
 
 - Documentation: https://micake.github.io/
 - GitHub: https://github.com/MiCake/MiCake
-- NuGet Packages: MiCake.Core, MiCake.DDD.Domain, MiCake.EntityFrameworkCore, MiCake.AspNetCore
+- NuGet Packages: MiCake.Core, MiCake, MiCake.EntityFrameworkCore, MiCake.AspNetCore
 
 ## Knowledge References
 

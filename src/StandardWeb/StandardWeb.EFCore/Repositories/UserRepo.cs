@@ -1,10 +1,10 @@
 using MiCake.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using StandardWeb.Domain.Enums.Identity;
 using StandardWeb.Domain.Models.Identity;
+using StandardWeb.Domain.Repositories;
 
-namespace StandardWeb.Domain.Repositories;
+namespace StandardWeb.EFCore.Repositories;
 
 public class UserRepo : BasePagingRepository<User>, IUserRepo
 {
@@ -31,7 +31,7 @@ public class UserRepo : BasePagingRepository<User>, IUserRepo
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IIncludableQueryable<User, object>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
     {
         var query = GetDbSet(needTracking);
         if (include != null)
@@ -41,7 +41,7 @@ public class UserRepo : BasePagingRepository<User>, IUserRepo
         return await query.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
     }
 
-    public async Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IIncludableQueryable<User, object>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
     {
         var query = GetDbSet(needTracking);
         if (include != null)

@@ -5,24 +5,26 @@
 StandardWeb 是基于 MiCake 框架构建的一个开箱即用的 ASP.NET Core 10.0 + DDD 模板。它把常见的 Web 服务组成部分（认证、日志、EF Core、映射等）分层封装，便于快速上手并在企业场景中扩展。
 
 ## 架构概览
-模板采用清晰的分层设计（并使用 MiCake 模块化支持，各层依赖方向为 Web → Application → Domain → Common/Contracts）：
+模板采用清晰的分层设计（并使用 MiCake 模块化支持，各层依赖方向为 Web → Application → EFCore → Domain → Common/Contracts）：
 
 | 层级 | 项目 | 主要职责 |
 | --- | --- | --- |
 | Web Host | `StandardWeb.Web` | 应用启动与宿主：Program.cs、Controller、API Host 配置、OpenAPI/Swagger、认证与中间件注册 |
 | Application | `StandardWeb.Application` | 应用用例/业务编排：服务（Use-cases）、Providers（如 JwtProvider）、DTO 映射（AutoMapper 配置） |
-| Domain | `StandardWeb.Domain` | 领域模型、聚合根、仓储接口与实现、EF Core DbContext 与迁移 |
+| Infrastructure（基础设施层） | `StandardWeb.EFCore` | 数据访问实现：EF Core DbContext、仓储实现 |
+| Domain | `StandardWeb.Domain` | 领域模型、聚合根、仓储接口（纯领域层，技术无关） |
 | Common | `StandardWeb.Common` | 跨层基础设施：工具类（加密、时间等）、共享 contract/类型、认证/Token 辅助、缓存/HttpClient 封装 |
 | Contracts | `StandardWeb.Contracts` | 对外 DTO（公共数据契约），供不同层之间（或其他服务）共享使用 |
 
-依赖自上而下流动（Web → Application → Domain），公共工具位于 `StandardWeb.Common`，方便被多个模块共享。
+依赖自上而下流动（Web → Application → EFCore → Domain），领域层保持技术无关性。`StandardWeb.EFCore` 层处理所有数据库相关的实现，而 `StandardWeb.Domain` 包含纯粹的领域逻辑和仓储接口。
 
 ## 目录结构（精简视图）
 ```
 src/StandardWeb
 ├── StandardWeb.Common/       # 跨层基础设施：加解密、时间、Result、Token 辅助等
 ├── StandardWeb.Contracts/    # 共享 DTO/Contracts（与 Application、Web 对接）
-├── StandardWeb.Domain/       # 领域模型、仓储接口与实现、AppDbContext
+├── StandardWeb.Domain/       # 领域模型、聚合根、仓储接口（纯领域，无基础设施）
+├── StandardWeb.EFCore/       # 基础设施层：AppDbContext、仓储实现、EF Core 配置
 ├── StandardWeb.Application/  # 业务服务、Provider、AutoMapper Profile
 ├── StandardWeb.Web/          # 启动宿主：Program.cs、控制器、OpenAPI、Startup 扩展
 ├── tests/                    # 测试项目
@@ -131,8 +133,8 @@ public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto d
 Providers路径用于放置各种职责单一或者与外界交互的服务类，例如发送邮件、生成 JWT Token、Azure Client 等。Application 层下的Service通过协调这些Providers来完成一项完整的业务逻辑。
 
 ## 扩展一个业务模块（建议流程）
-1. 在 `StandardWeb.Domain` 中定义实体、聚合及仓储接口等领域对象；
-2. 在 `StandardWeb.Domain` 添加仓储实现，并且在`AppDbContext`中注册和配置EFCore实体；
+1. 在 `StandardWeb.Domain` 中定义实体、聚合及仓储接口等领域对象（保持技术无关）；
+2. 在 `StandardWeb.EFCore/Repositories/` 添加仓储实现，并且在 `AppDbContext` 中配置 EF Core 实体映射；
 3. 在 `StandardWeb.Application/Services/<模块名>` 实现业务逻辑（Use-cases），并在 Application 层编写 AutoMapper Profile；
 4. 在`StandardWeb.Application\ErrorCodes`中定义错误码；（如果需要）
 5. 在`StandardWeb.Contracts`中定义跨服务共享的 DTO 和接口；（如果需要）

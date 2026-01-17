@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StandardWeb.Domain.Models.Configuration;
 using StandardWeb.Domain.Models.Identity;
 
-namespace StandardWeb.Domain;
+namespace StandardWeb.EFCore;
 
 public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 {

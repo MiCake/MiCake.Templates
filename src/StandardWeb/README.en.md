@@ -5,24 +5,26 @@
 StandardWeb is a ready-to-use ASP.NET Core 10.0 + DDD template built on the MiCake framework. It encapsulates common web service components (authentication, logging, EF Core, mapping, etc.) in layers for easy startup and enterprise expansion.
 
 ## Architecture Overview
-The template adopts a clear layered design (using MiCake modular support, with layer dependency direction: Web → Application → Domain → Common/Contracts):
+The template adopts a clear layered design (using MiCake modular support, with layer dependency direction: Web → Application → EFCore → Domain → Common/Contracts):
 
 | Layer | Project | Main Responsibilities |
 | --- | --- | --- |
 | Web Host | `StandardWeb.Web` | Application startup and hosting: Program.cs, Controller, API Host configuration, OpenAPI/Swagger, authentication and middleware registration |
 | Application | `StandardWeb.Application` | Application use-cases/business orchestration: Services (Use-cases), Providers (e.g., JwtProvider), DTO mapping (AutoMapper configuration) |
-| Domain | `StandardWeb.Domain` | Domain models, aggregates, repository interfaces and implementations, EF Core DbContext and migrations |
+| Infrastructure (EF Core) | `StandardWeb.EFCore` | Data access implementation: EF Core DbContext, repository implementations |
+| Domain | `StandardWeb.Domain` | Domain models, aggregates, repository interfaces (technology-agnostic domain layer) |
 | Common | `StandardWeb.Common` | Cross-layer infrastructure: Utility classes (encryption, time, etc.), shared contracts/types, authentication/Token helpers, cache/HttpClient encapsulation |
 | Contracts | `StandardWeb.Contracts` | External DTOs (public data contracts), for sharing between layers (or other services) |
 
-Dependencies flow from top to bottom (Web → Application → Domain), with common tools located in `StandardWeb.Common` for easy sharing across modules.
+Dependencies flow from top to bottom (Web → Application → EFCore → Domain), with the Domain layer kept technology-agnostic. The `StandardWeb.EFCore` layer handles all database-specific implementations, while `StandardWeb.Domain` contains pure domain logic and repository interfaces.
 
 ## Directory Structure (Simplified View)
 ```
 src/StandardWeb
 ├── StandardWeb.Common/       # Cross-layer infrastructure: Encryption/decryption, time, Result, Token helpers, etc.
 ├── StandardWeb.Contracts/    # Shared DTOs/Contracts (connecting with Application, Web)
-├── StandardWeb.Domain/       # Domain models, repository interfaces and implementations, AppDbContext
+├── StandardWeb.Domain/       # Domain models, aggregates, repository interfaces (pure domain, no infrastructure)
+├── StandardWeb.EFCore/       # Infrastructure layer: AppDbContext, repository implementations, EF Core configurations
 ├── StandardWeb.Application/  # Business services, Providers, AutoMapper Profiles
 ├── StandardWeb.Web/          # Startup host: Program.cs, controllers, OpenAPI, Startup extensions
 ├── tests/                    # Test projects
@@ -131,8 +133,8 @@ public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto d
 The Providers path is used for placing services with single responsibilities or interacting with external systems, such as sending emails, generating JWT tokens, Azure clients, etc. Services in the Application layer coordinate these Providers to complete a complete business logic.
 
 ## Adding a New Business Module (Recommended Process)
-1. Define entities, aggregates, and repository interfaces in `StandardWeb.Domain`;
-2. Add repository implementation in `StandardWeb.Domain`, and register/configure EF Core entities in `AppDbContext`;
+1. Define entities, aggregates, and repository interfaces in `StandardWeb.Domain` (keep it technology-agnostic);
+2. Add repository implementations in `StandardWeb.EFCore/Repositories/`, and configure EF Core entity mappings in `AppDbContext`;
 3. Implement business logic (use-cases) in `StandardWeb.Application/Services/<ModuleName>/`, and write AutoMapper Profiles in Application layer;
 4. Define error codes in `StandardWeb.Application\ErrorCodes` (if needed);
 5. Define cross-service shared DTOs and interfaces in `StandardWeb.Contracts` (if needed);
