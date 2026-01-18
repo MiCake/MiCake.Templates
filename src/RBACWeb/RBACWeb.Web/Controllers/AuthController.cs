@@ -53,7 +53,7 @@ namespace RBACWeb.Web.Controllers
         {
             _logger.LogInformation("Login attempt for phone number: {PhoneNumber}", request.PhoneNumber);
 
-            var loginResult = await _authService.LoginAsync(request);
+            var loginResult = await _authService.LoginByPhoneAsync(request);
             if (!loginResult.IsSuccess)
             {
                 return BadRequest(loginResult.ErrorCode ?? AuthErrorCodes.InvalidInput, loginResult.ErrorMessage);

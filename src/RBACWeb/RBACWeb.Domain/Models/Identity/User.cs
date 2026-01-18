@@ -6,30 +6,21 @@ namespace RBACWeb.Domain.Models.Identity;
 
 public class User : AuditAggregateRoot
 {
-    [MaxLength(15)]
+    /// <summary>
+    /// Contact information - at least one contact method (phone or email) is required
+    /// </summary>
     [Required]
-    public string PhoneNumber { get; private set; } = null!;
+    public ContactInfo Contact { get; private set; } = null!;
 
-    [MaxLength(100)]
-    public string? Email { get; private set; }
+    /// <summary>
+    /// Password credentials - nullable to support external-login-only users
+    /// </summary>
+    public Password? Credential { get; private set; }
 
-    [Required]
-    [MaxLength(300)]
-    public string PasswordHash { get; private set; } = string.Empty;
-
-    [MaxLength(50)]
-    public string? Salt { get; private set; }
-
-    [MaxLength(100)]
-    public string? FirstName { get; private set; }
-
-    [MaxLength(100)]
-    public string? LastName { get; private set; }
-
-    [MaxLength(100)]
-    public string? DisplayName { get; private set; }
-
-    public DateTime? DateOfBirth { get; private set; }
+    /// <summary>
+    /// Personal profile information
+    /// </summary>
+    public PersonalInfo Profile { get; private set; } = PersonalInfo.Empty;
 
     public string? ProfilePictureUrl { get; private set; }
 
@@ -54,45 +45,76 @@ public class User : AuditAggregateRoot
     private readonly List<UserRole> _userRoles = [];
     public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
 
+    private readonly List<UserLoginHistory> _loginHistory = [];
+    public IReadOnlyCollection<UserLoginHistory> LoginHistory => _loginHistory.AsReadOnly();
+
     #endregion
 
     private const int MaxLoginAttempts = 5;
 
     protected User() { }
 
-    public static User RegisterNewUser(string phoneNumber, string passwordHash, string? salt = null)
+    /// <summary>
+    /// Registers a new user with phone number and password.
+    /// </summary>
+    public static User RegisterWithPhoneNumber(string phoneNumber, string passwordHash, string? salt = null)
     {
-        if (string.IsNullOrWhiteSpace(phoneNumber))
-            throw new ArgumentException("Phone number cannot be empty", nameof(phoneNumber));
+        var contact = ContactInfo.FromPhoneNumber(phoneNumber);
+        var password = Password.Create(passwordHash, salt);
 
-        if (string.IsNullOrWhiteSpace(passwordHash))
-            throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
-
-        var user = new User
+        return new User
         {
-            PhoneNumber = phoneNumber,
-            PasswordHash = passwordHash,
-            Salt = salt,
+            Contact = contact,
+            Credential = password,
+            Profile = PersonalInfo.Empty
         };
-
-        return user;
     }
 
-    public void UpdateProfile(string? firstName, string? lastName, string? displayName, DateTime? dateOfBirth = null)
+    /// <summary>
+    /// Registers a new user with email and password.
+    /// </summary>
+    public static User RegisterWithEmail(string email, string passwordHash, string? salt = null)
     {
-        FirstName = firstName ?? string.Empty;
-        LastName = lastName ?? string.Empty;
-        DisplayName = displayName ?? string.Empty;
+        var contact = ContactInfo.FromEmail(email);
+        var password = Password.Create(passwordHash, salt);
 
-        if (dateOfBirth.HasValue)
+        return new User
         {
-            DateOfBirth = dateOfBirth;
-        }
+            Contact = contact,
+            Credential = password,
+            Profile = PersonalInfo.Empty
+        };
+    }
+
+    /// <summary>
+    /// Registers a new user with both phone number and email.
+    /// </summary>
+    public static User RegisterWithBoth(string phoneNumber, string email, string passwordHash, string? salt = null)
+    {
+        var contact = ContactInfo.Create(phoneNumber, email);
+        var password = Password.Create(passwordHash, salt);
+
+        return new User
+        {
+            Contact = contact,
+            Credential = password,
+            Profile = PersonalInfo.Empty
+        };
     }
 
     public void UpdateEmail(string? email)
     {
-        Email = email;
+        Contact = Contact.UpdateEmail(email);
+    }
+
+    public void UpdatePhoneNumber(string? phoneNumber)
+    {
+        Contact = Contact.UpdatePhoneNumber(phoneNumber);
+    }
+
+    public void UpdateProfile(PersonalInfo info)
+    {
+        Profile = info ?? PersonalInfo.Empty;
     }
 
     public void SetProfilePicture(string pictureUrl)
@@ -149,9 +171,10 @@ public class User : AuditAggregateRoot
         if (string.IsNullOrWhiteSpace(newPasswordHash))
             throw new ArgumentException("Password hash cannot be empty", nameof(newPasswordHash));
 
-        PasswordHash = newPasswordHash;
-        Salt = newSalt;
+        Credential = Password.Create(newPasswordHash, newSalt);
     }
+
+    public bool HasPassword() => Credential is not null;
 
     public void MarkDangerousLogin()
     {
@@ -176,7 +199,7 @@ public class User : AuditAggregateRoot
             ?? throw new InvalidOperationException($"External login {providerType} not found or already unbound");
 
         // Safety check: prevent removing the only login method
-        var hasPasswordLogin = !string.IsNullOrWhiteSpace(PasswordHash);
+        var hasPasswordLogin = HasPassword();
         var otherActiveLogins = _externalLogins.Count(e => e.ProviderType != providerType && !e.IsUnbound);
 
         if (!hasPasswordLogin && otherActiveLogins == 0)
@@ -202,7 +225,6 @@ public class User : AuditAggregateRoot
             {
                 // Update existing active login
                 existing.UpdateUserProfile(externalLogin.NickName, externalLogin.AvatarUrl);
-                existing.UpdateTokens(externalLogin.AccessToken);
                 existing.RecordLogin();
                 return true;
             }
@@ -211,7 +233,6 @@ public class User : AuditAggregateRoot
                 // Rebind unbound login
                 existing.Rebind();
                 existing.UpdateUserProfile(externalLogin.NickName, externalLogin.AvatarUrl);
-                existing.UpdateTokens(externalLogin.AccessToken);
                 return true;
             }
         }
@@ -225,10 +246,42 @@ public class User : AuditAggregateRoot
 
     public bool HasAnyLoginMethod()
     {
-        var hasPasswordLogin = !string.IsNullOrWhiteSpace(PasswordHash);
+        var hasPasswordLogin = HasPassword();
         var hasActiveExternalLogin = _externalLogins.Any(e => !e.IsUnbound);
 
         return hasPasswordLogin || hasActiveExternalLogin;
+    }
+
+    #endregion
+
+    #region Login History Management
+
+    /// <summary>
+    /// Records a successful login attempt and resets failed count.
+    /// </summary>
+    public void RecordSuccessfulLogin(UserLoginHistory record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        if (record.LoginSuccessful == false)
+            throw new ArgumentException("Record must indicate a successful login", nameof(record));
+
+        _loginHistory.Add(record);
+        ResetAccessFailedCount();
+    }
+
+    /// <summary>
+    /// Records a failed login attempt and increments failed count.
+    /// </summary>
+    public void RecordFailedLogin(UserLoginHistory record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        if (record.LoginSuccessful == true)
+            throw new ArgumentException("Record must indicate a failed login", nameof(record));
+
+        _loginHistory.Add(record);
+        IncrementAccessFailedCount();
     }
 
     #endregion

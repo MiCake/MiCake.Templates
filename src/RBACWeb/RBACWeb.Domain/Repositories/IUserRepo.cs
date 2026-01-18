@@ -5,7 +5,20 @@ namespace RBACWeb.Domain.Repositories;
 
 public interface IUserRepo : IRepositoryHasPagingQuery<User, long>
 {
+    /// <summary>
+    /// Finds a user by phone number or email (primary contact lookup).
+    /// </summary>
+    Task<User?> FindByContactAsync(string phoneOrEmail, bool needTracking = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a user by phone number (legacy method for backward compatibility).
+    /// </summary>
     Task<User?> GetByPhoneNumberAsync(string phoneNumber, bool needTracking = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a user by email address.
+    /// </summary>
+    Task<User?> GetByEmailAsync(string email, bool needTracking = true, CancellationToken cancellationToken = default);
 
     Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default);
 

@@ -12,9 +12,26 @@ public class UserRepo : BasePagingRepository<User>, IUserRepo
     {
     }
 
+    public async Task<User?> FindByContactAsync(string phoneOrEmail, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        // Try to find by either phone number or email
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => 
+                (u.Contact.PhoneNumber != null && u.Contact.PhoneNumber == phoneOrEmail) ||
+                (u.Contact.Email != null && u.Contact.Email == phoneOrEmail), 
+                cancellationToken);
+    }
+
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, bool needTracking = true, CancellationToken cancellationToken = default)
     {
-        return await GetDbSet(needTracking).FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => u.Contact.PhoneNumber == phoneNumber, cancellationToken);
+    }
+
+    public async Task<User?> GetByEmailAsync(string email, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => u.Contact.Email == email, cancellationToken);
     }
 
     public async Task<User?> FindByExternalLoginAsync(LoginProviderType providerType, string providerKey, bool needTracking = true, CancellationToken cancellationToken = default)
@@ -38,7 +55,7 @@ public class UserRepo : BasePagingRepository<User>, IUserRepo
         {
             query = include(query);
         }
-        return await query.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+        return await query.FirstOrDefaultAsync(u => u.Contact.PhoneNumber == phoneNumber, cancellationToken);
     }
 
     public async Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)

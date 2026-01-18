@@ -23,8 +23,19 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtClaimTypes.UserId, user.Id.ToString()),
-            new(JwtClaimTypes.PhoneNumber, user.PhoneNumber),
         };
+
+        // Add phone number claim if available
+        if (user.Contact.HasPhoneNumber)
+        {
+            finalClaims.Add(new Claim(JwtClaimTypes.PhoneNumber, user.Contact.PhoneNumber!));
+        }
+
+        // Add email claim if available
+        if (user.Contact.HasEmail)
+        {
+            finalClaims.Add(new Claim(ClaimTypes.Email, user.Contact.Email!));
+        }
 
         if (claims != null && claims.Count > 0)
         {

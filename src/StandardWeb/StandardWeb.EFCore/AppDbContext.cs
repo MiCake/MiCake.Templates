@@ -10,7 +10,6 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
     #region  Identity Module
 
     public DbSet<User> User { get; set; }
-    public DbSet<UserLoginHistory> UserLoginHistory { get; set; }
 
     #endregion
 
@@ -26,7 +25,19 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<User>(builder =>
         {
-            builder.HasIndex(x => x.PhoneNumber).IsUnique();
+            // Configure ContactInfo value object
+            builder.OwnsOne(u => u.Contact, contact =>
+            {
+                // Indexes for searching
+                contact.HasIndex(c => c.PhoneNumber);
+                contact.HasIndex(c => c.Email);
+            });
+
+            // Configure Password value object
+            builder.OwnsOne(u => u.Credential);
+
+            // Configure PersonalInfo value object
+            builder.OwnsOne(u => u.Profile);
         });
 
         modelBuilder.Entity<ExternalLoginProvider>(builder =>
@@ -45,7 +56,7 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
         modelBuilder.Entity<UserLoginHistory>(builder =>
         {
             builder.HasIndex(x => x.RecordedAt);
-            builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            builder.HasOne(x => x.User).WithMany(u => u.LoginHistory).HasForeignKey(x => x.UserId);
         });
 
         #endregion
@@ -54,25 +65,9 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<AppSetting>(builder =>
         {
-            builder.ToTable("AppSettings");
-            builder.HasKey(x => x.Id);
-
             // Unique constraint on SettingGroup + Key
             builder.HasIndex(x => new { x.SettingGroup, x.Key }).IsUnique();
             builder.HasIndex(x => x.SettingGroup);
-            builder.HasIndex(x => x.UpdatedAt);
-
-            // Properties
-            builder.Property(x => x.SettingGroup).IsRequired();
-            builder.Property(x => x.Key).HasMaxLength(100).IsRequired();
-            builder.Property(x => x.Value).IsRequired();
-            builder.Property(x => x.DataType).IsRequired();
-            builder.Property(x => x.Description).HasMaxLength(500);
-            builder.Property(x => x.IsEncrypted).IsRequired();
-            builder.Property(x => x.ValidationPattern).HasMaxLength(500);
-
-            // Note: Audit fields (CreatedBy, CreatedAt, ModifiedBy, UpdatedAt) 
-            // are auto-configured by MiCake framework
         });
 
         #endregion

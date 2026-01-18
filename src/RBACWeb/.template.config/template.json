@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MiCake Team",
+    "classifications": [
+        "MiCake",
+        "RBAC",
+        "WebAPI"
+    ],
+    "identity": "MiCake.WebAPI.RBAC.Template",
+    "name": "MiCake WebAPI Template with RBAC",
+    "shortName": "micake-webapi-rbac",
+    "sourceName": "RBACWeb",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    }
+}

@@ -49,23 +49,6 @@ public class ExternalLoginProvider : AuditEntity
     public string? ExtendedData { get; private set; }
 
     /// <summary>
-    /// Access token (optional, for subsequent API calls)
-    /// </summary>
-    [MaxLength(1000)]
-    public string? AccessToken { get; private set; }
-
-    /// <summary>
-    /// Refresh token (optional)
-    /// </summary>
-    [MaxLength(1000)]
-    public string? RefreshToken { get; private set; }
-
-    /// <summary>
-    /// Token expiration time (optional)
-    /// </summary>
-    public DateTime? TokenExpiresAt { get; private set; }
-
-    /// <summary>
     /// First bind time
     /// </summary>
     public DateTime BindTime { get; private set; }
@@ -112,7 +95,6 @@ public class ExternalLoginProvider : AuditEntity
             ProviderUnionId = providerUnionId,
             NickName = nickName,
             AvatarUrl = avatarUrl,
-            AccessToken = accessToken,
             BindTime = TimeNow.Now,
             IsUnbound = false
         };
@@ -133,16 +115,6 @@ public class ExternalLoginProvider : AuditEntity
     }
 
     /// <summary>
-    /// Update access tokens
-    /// </summary>
-    public void UpdateTokens(string? accessToken, string? refreshToken = null, DateTime? expiresAt = null)
-    {
-        AccessToken = accessToken;
-        RefreshToken = refreshToken;
-        TokenExpiresAt = expiresAt;
-    }
-
-    /// <summary>
     /// Record login activity
     /// </summary>
     public void RecordLogin()
@@ -160,11 +132,6 @@ public class ExternalLoginProvider : AuditEntity
 
         IsUnbound = true;
         UnboundTime = TimeNow.Now;
-
-        // Clear sensitive information
-        AccessToken = null;
-        RefreshToken = null;
-        TokenExpiresAt = null;
     }
 
     /// <summary>

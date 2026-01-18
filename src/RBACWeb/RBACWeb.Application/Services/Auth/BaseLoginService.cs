@@ -81,7 +81,6 @@ public abstract class BaseLoginService
         }
 
         var tokenResult = await GenerateJwtTokenAsync(user, cancellationToken);
-        await UserRepo.SaveChangesAsync(cancellationToken);
 
         var loginResult = new LoginResultDto
         {

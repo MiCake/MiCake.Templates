@@ -28,23 +28,38 @@ public class AuthService : BaseLoginService
     /// Validates phone format and checks for existing accounts.
     /// </summary>
     /// <param name="data">Registration data including credentials and profile info</param>
-    /// <param name="cancellationToken">Cancellation token for async operation</param>
+    /// <param name="ct">Cancellation token for async operation</param>
     /// <returns>Operation result with created user or error details</returns>
-    public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto data, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto data, CancellationToken ct = default)
     {
         Logger.LogInformation("Registering user with phone number: {PhoneNumber}", data.PhoneNumber);
 
-        // Validate phone number format (Chinese mobile format)
-        if (!FormatChecker.IsValidPhoneNumber(data.PhoneNumber))
+        // Validate that at least one contact method is provided
+        if (string.IsNullOrWhiteSpace(data.PhoneNumber) && string.IsNullOrWhiteSpace(data.Email))
+        {
+            return OperationResult<UserDto?>.Failure("At least one contact method (phone or email) is required.", BaseErrorCodes.InvalidInput);
+        }
+
+        // Validate phone number format if provided
+        if (!string.IsNullOrWhiteSpace(data.PhoneNumber) && !FormatChecker.IsValidPhoneNumber(data.PhoneNumber))
         {
             return OperationResult<UserDto?>.Failure("Invalid phone number format.", BaseErrorCodes.InvalidInput);
         }
 
-        // Check if phone number already exists
-        var existingUser = await UserRepo.GetByPhoneNumberAsync(data.PhoneNumber!, false, cancellationToken: cancellationToken);
+        // Check if user already exists (by phone or email)
+        User? existingUser = null;
+        if (!string.IsNullOrWhiteSpace(data.PhoneNumber))
+        {
+            existingUser = await UserRepo.GetByPhoneNumberAsync(data.PhoneNumber, false, cancellationToken: ct);
+        }
+        if (existingUser is null && !string.IsNullOrWhiteSpace(data.Email))
+        {
+            existingUser = await UserRepo.GetByEmailAsync(data.Email, false, cancellationToken: ct);
+        }
+
         if (existingUser is not null)
         {
-            return OperationResult<UserDto?>.Failure("User with the given phone number already exists.", AuthErrorCodes.UserAlreadyExists);
+            return OperationResult<UserDto?>.Failure("User with the given contact information already exists.", AuthErrorCodes.UserAlreadyExists);
         }
 
         // Validate password is provided
@@ -55,12 +70,26 @@ public class AuthService : BaseLoginService
 
         // Hash password with BCrypt
         var (hash, salt) = EncryptionHelper.HashContent(data.Password);
-        var newUser = User.RegisterNewUser(data.PhoneNumber!, hash, salt);
-        newUser.UpdateProfile(data.FirstName, data.LastName, data.DisplayName);
 
-        // Persist user to database
-        await UserRepo.AddAsync(newUser, cancellationToken);
-        var result = await UserRepo.SaveChangesAsync(cancellationToken);
+        // Create user with appropriate factory method
+        User newUser;
+        if (!string.IsNullOrWhiteSpace(data.PhoneNumber) && !string.IsNullOrWhiteSpace(data.Email))
+        {
+            newUser = User.RegisterWithBoth(data.PhoneNumber, data.Email, hash, salt);
+        }
+        else if (!string.IsNullOrWhiteSpace(data.PhoneNumber))
+        {
+            newUser = User.RegisterWithPhoneNumber(data.PhoneNumber, hash, salt);
+        }
+        else
+        {
+            newUser = User.RegisterWithEmail(data.Email!, hash, salt);
+        }
+
+        newUser.UpdateProfile(PersonalInfo.Create(data.FirstName, data.LastName, data.DisplayName));
+
+        await UserRepo.AddAsync(newUser, ct);
+        var result = await UserRepo.SaveChangesAsync(ct);
         if (result < 0)
         {
             return OperationResult<UserDto?>.Failure("Failed to register user.", BaseErrorCodes.InternalError);
@@ -75,14 +104,21 @@ public class AuthService : BaseLoginService
     /// Handles account locking after failed attempts and OTP requirement for suspicious accounts.
     /// </summary>
     /// <param name="data">Login credentials and optional OTP code</param>
-    /// <param name="cancellationToken">Cancellation token for async operation</param>
+    /// <param name="ct">Cancellation token for async operation</param>
     /// <returns>Operation result with login tokens and user info, or error details</returns>
-    public async Task<OperationResult<LoginResultDto>> LoginAsync(LoginRequestDto data, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<LoginResultDto>> LoginByPhoneAsync(LoginRequestDto data, CancellationToken ct = default)
     {
-        Logger.LogInformation("Logging in user with phone number: {PhoneNumber}", data.PhoneNumber);
+        Logger.LogInformation("Logging in user with contact: {Contact}", data.PhoneNumber);
+
+        // Validate that at least one contact method is provided
+        if (string.IsNullOrWhiteSpace(data.PhoneNumber))
+        {
+            return OperationResult<LoginResultDto>.Failure("Phone number or email is required.", AuthErrorCodes.InvalidInput);
+        }
 
         // Load user with related tokens for refresh token validation
-        var user = await UserRepo.GetByPhoneNumberWithIncludesAsync(data.PhoneNumber!, s => s.Include(j => j.UserTokens), cancellationToken: cancellationToken);
+        // Try to find by phone
+        var user = await UserRepo.GetByPhoneNumberWithIncludesAsync(data.PhoneNumber!, s => s.Include(j => j.UserTokens), needTracking: true, cancellationToken: ct);
         if (user is null)
         {
             return OperationResult<LoginResultDto>.Failure("User not found.", AuthErrorCodes.UserNotFound);
@@ -95,6 +131,12 @@ public class AuthService : BaseLoginService
             return OperationResult<LoginResultDto>.Failure(accountValidation.ErrorMessage ?? "Account validation failed", accountValidation.ErrorCode);
         }
 
+        // Check if user has a password (external-only users cannot login with password)
+        if (!user.HasPassword())
+        {
+            return OperationResult<LoginResultDto>.Failure("This account requires external login (no password set).", AuthErrorCodes.InvalidCredentials);
+        }
+
         // Check if OTP is required for this account
         if (user.ForceOTPOnLogin && string.IsNullOrWhiteSpace(data.OtpCode))
         {
@@ -102,9 +144,9 @@ public class AuthService : BaseLoginService
         }
 
         // Verify password hash
-        if (!EncryptionHelper.VerifyHash(data.Password!, user.PasswordHash, user.Salt ?? ""))
+        if (!EncryptionHelper.VerifyHash(data.Password!, user.Credential!.Hash, user.Credential.Salt ?? ""))
         {
-            await HandleFailedLoginAttemptAsync(user, cancellationToken);
+            await HandleFailedLoginAttemptAsync(user, ct);
             return OperationResult<LoginResultDto>.Failure("Invalid credentials.", AuthErrorCodes.InvalidCredentials);
         }
 
@@ -118,8 +160,8 @@ public class AuthService : BaseLoginService
         HandleSuccessfulLogin(user);
 
         // Generate JWT access and refresh tokens
-        var tokenResult = await GenerateJwtTokenAsync(user, cancellationToken);
-        await UserRepo.SaveChangesAsync(cancellationToken);
+        var tokenResult = await GenerateJwtTokenAsync(user, ct);
+        await UserRepo.SaveChangesAsync(ct);
 
         var loginResult = CreateLoginResult(user, tokenResult);
 
