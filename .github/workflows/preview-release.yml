@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - "releases/preview*"
+  pull_request:
+    branches:
+      - "releases/preview*"
+    types: [closed]
   workflow_dispatch: # Allow manual trigger for emergency releases
 
 # Prevent concurrent preview releases
@@ -25,6 +29,7 @@ env:
 
 jobs:
   build-and-publish-preview:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
 
     steps:
@@ -160,10 +165,23 @@ jobs:
         run: |
           for package in ./artifacts/*.nupkg; do
             echo "Pushing $package..."
-            dotnet nuget push "$package" \
+            
+            # Try to push, but don't fail if package already exists
+            if dotnet nuget push "$package" \
               --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
               --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
+              --skip-duplicate; then
+              echo "✅ Successfully pushed or skipped: $package"
+            else
+              EXIT_CODE=$?
+              if [ $EXIT_CODE -eq 1 ]; then
+                echo "⚠️ Package may already exist, but --skip-duplicate should handle this"
+                echo "::warning ::Package $package may already exist on NuGet.org"
+              else
+                echo "❌ Failed to push $package with exit code $EXIT_CODE"
+                exit $EXIT_CODE
+              fi
+            fi
           done
 
       - name: Create preview release summary
