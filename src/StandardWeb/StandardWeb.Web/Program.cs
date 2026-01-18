@@ -27,9 +27,10 @@ try
     builder.Services.AddMiCakeWithDefault<WebModule, AppDbContext>(
         opt =>
         {
-            opt.AuditConfig = audit =>
+            opt.AspNetConfig = asp =>
             {
-                audit.AuditTimeProvider = () => TimeNow.Now;
+                // Enable MiCake's API logging feature
+                asp.UseApiLogging = true;
             };
         }
     ).Build();
