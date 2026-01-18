@@ -146,64 +146,7 @@ public class AppSettingService
 
         foreach (var item in dto.Settings)
         {
-            try
-            {
-                if (existingDict.TryGetValue(item.Key, out var existingSetting))
-                {
-                    // Update existing setting
-                    var valueForStorage = PrepareValueForStorage(item.Value, existingSetting.IsEncrypted, DataEncrytionPurpose.AppSettingValue);
-                    if (valueForStorage is null)
-                    {
-                        result.Failed++;
-                        result.Errors.Add($"{item.Key}: Failed to encrypt value");
-                        continue;
-                    }
-
-                    existingSetting.UpdateValue(valueForStorage);
-                    result.Updated++;
-                    _logger.LogInformation("Updated setting in batch: {Group}/{Key}", settingGroup, item.Key);
-
-                    // Invalidate cache
-                    await InvalidateCacheAsync(settingGroup, item.Key, ct);
-                }
-                else
-                {
-                    // Create new setting
-                    if (!Enum.TryParse<SettingDataType>(item.DataType, ignoreCase: true, out var dataType))
-                    {
-                        result.Failed++;
-                        result.Errors.Add($"{item.Key}: Invalid data type '{item.DataType}'");
-                        continue;
-                    }
-
-                    var valueForStorage = PrepareValueForStorage(item.Value, item.IsEncrypted, DataEncrytionPurpose.AppSettingValue);
-                    if (valueForStorage is null)
-                    {
-                        result.Failed++;
-                        result.Errors.Add($"{item.Key}: Failed to encrypt value");
-                        continue;
-                    }
-
-                    var newSetting = AppSetting.Create(
-                        settingGroup,
-                        item.Key,
-                        valueForStorage,
-                        dataType,
-                        item.IsEncrypted,
-                        item.Description,
-                        item.ValidationPattern);
-
-                    await _repository.AddAsync(newSetting, ct);
-                    result.Created++;
-                    _logger.LogInformation("Created setting in batch: {Group}/{Key}", settingGroup, item.Key);
-                }
-            }
-            catch (Exception ex)
-            {
-                result.Failed++;
-                result.Errors.Add($"{item.Key}: {ex.Message}");
-                _logger.LogError(ex, "Error processing setting in batch: {Group}/{Key}", settingGroup, item.Key);
-            }
+            await ProcessBatchSettingItemAsync(item, settingGroup, existingDict, result, ct);
         }
 
         _logger.LogInformation("Batch upsert completed for group {Group}: Created={Created}, Updated={Updated}, Failed={Failed}",
@@ -332,6 +275,98 @@ public class AppSettingService
     #endregion
 
     #region Private Helpers
+
+    /// <summary>
+    /// Processes a single setting item during batch upsert.
+    /// </summary>
+    private async Task ProcessBatchSettingItemAsync(
+        BatchSettingItemDto item,
+        SettingGroup settingGroup,
+        Dictionary<string, AppSetting> existingDict,
+        BatchUpsertResultDto result,
+        CancellationToken ct)
+    {
+        try
+        {
+            if (existingDict.TryGetValue(item.Key, out var existingSetting))
+            {
+                await UpdateExistingSettingInBatchAsync(item, settingGroup, existingSetting, result, ct);
+            }
+            else
+            {
+                await CreateNewSettingInBatchAsync(item, settingGroup, result, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Failed++;
+            result.Errors.Add($"{item.Key}: {ex.Message}");
+            _logger.LogError(ex, "Error processing setting in batch: {Group}/{Key}", settingGroup, item.Key);
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing setting during batch upsert.
+    /// </summary>
+    private async Task UpdateExistingSettingInBatchAsync(
+        BatchSettingItemDto item,
+        SettingGroup settingGroup,
+        AppSetting existingSetting,
+        BatchUpsertResultDto result,
+        CancellationToken ct)
+    {
+        var valueForStorage = PrepareValueForStorage(item.Value, existingSetting.IsEncrypted, DataEncrytionPurpose.AppSettingValue);
+        if (valueForStorage is null)
+        {
+            result.Failed++;
+            result.Errors.Add($"{item.Key}: Failed to encrypt value");
+            return;
+        }
+
+        existingSetting.UpdateValue(valueForStorage);
+        result.Updated++;
+        _logger.LogInformation("Updated setting in batch: {Group}/{Key}", settingGroup, item.Key);
+
+        await InvalidateCacheAsync(settingGroup, item.Key, ct);
+    }
+
+    /// <summary>
+    /// Creates a new setting during batch upsert.
+    /// </summary>
+    private async Task CreateNewSettingInBatchAsync(
+        BatchSettingItemDto item,
+        SettingGroup settingGroup,
+        BatchUpsertResultDto result,
+        CancellationToken ct)
+    {
+        if (!Enum.TryParse<SettingDataType>(item.DataType, ignoreCase: true, out var dataType))
+        {
+            result.Failed++;
+            result.Errors.Add($"{item.Key}: Invalid data type '{item.DataType}'");
+            return;
+        }
+
+        var valueForStorage = PrepareValueForStorage(item.Value, item.IsEncrypted, DataEncrytionPurpose.AppSettingValue);
+        if (valueForStorage is null)
+        {
+            result.Failed++;
+            result.Errors.Add($"{item.Key}: Failed to encrypt value");
+            return;
+        }
+
+        var newSetting = AppSetting.Create(
+            settingGroup,
+            item.Key,
+            valueForStorage,
+            dataType,
+            item.IsEncrypted,
+            item.Description,
+            item.ValidationPattern);
+
+        await _repository.AddAsync(newSetting, ct);
+        result.Created++;
+        _logger.LogInformation("Created setting in batch: {Group}/{Key}", settingGroup, item.Key);
+    }
 
     /// <summary>
     /// Prepares a value for storage by encrypting it if required.

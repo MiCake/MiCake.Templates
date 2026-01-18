@@ -5,7 +5,7 @@ namespace RBACWeb.Common.Helpers;
 /// <summary>
 /// Provides helper methods for extracting claims from JWT tokens.
 /// </summary>
-public class TokenClaimHelper
+public static class TokenClaimHelper
 {
     /// <summary>
     /// Extracts the user ID from JWT token claims.

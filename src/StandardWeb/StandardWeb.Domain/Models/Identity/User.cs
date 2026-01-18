@@ -260,7 +260,7 @@ public class User : AuditAggregateRoot
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (record.LoginSuccessful == false)
+        if (!record.LoginSuccessful)
             throw new ArgumentException("Record must indicate a successful login", nameof(record));
 
         _loginHistory.Add(record);
@@ -274,7 +274,7 @@ public class User : AuditAggregateRoot
     {
         ArgumentNullException.ThrowIfNull(record);
 
-        if (record.LoginSuccessful == true)
+        if (record.LoginSuccessful)
             throw new ArgumentException("Record must indicate a failed login", nameof(record));
 
         _loginHistory.Add(record);

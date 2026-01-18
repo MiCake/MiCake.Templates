@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RBACWeb.Application.Services.Authorization;
 using RBACWeb.Contracts.Dtos.Authorization;
-using RBACWeb.Web.Authorization;
 
 namespace RBACWeb.Web.Controllers;
 
@@ -31,7 +30,6 @@ public class DataScopeController : BaseApiController
     /// Retrieves all data scopes.
     /// </summary>
     [HttpGet]
-    [RequirePermission("datascope:read")]
     [ProducesResponseType(typeof(IEnumerable<DataScopeDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllDataScopes()
     {
@@ -48,8 +46,7 @@ public class DataScopeController : BaseApiController
     /// Retrieves a data scope by ID.
     /// </summary>
     /// <param name="id">Data scope ID</param>
-    [HttpGet("{id:long}")]
-    [RequirePermission("datascope:read")]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(DataScopeDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDataScopeById(long id)
     {
@@ -57,7 +54,7 @@ public class DataScopeController : BaseApiController
         var result = await _dataScopeService.GetByIdAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage!);
         }
         return Ok(result.Data);
     }
@@ -67,7 +64,6 @@ public class DataScopeController : BaseApiController
     /// </summary>
     /// <param name="dto">Data scope creation data</param>
     [HttpPost]
-    [RequirePermission("datascope:create")]
     [ProducesResponseType(typeof(DataScopeDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateDataScope([FromBody] CreateDataScopeDto dto)
     {
@@ -75,7 +71,7 @@ public class DataScopeController : BaseApiController
         var result = await _dataScopeService.CreateAsync(dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage!);
         }
         return CreatedAtAction(nameof(GetDataScopeById), new { id = result.Data!.Id }, result.Data);
     }
@@ -85,8 +81,7 @@ public class DataScopeController : BaseApiController
     /// </summary>
     /// <param name="id">Data scope ID</param>
     /// <param name="dto">Data scope update data</param>
-    [HttpPut("{id:long}")]
-    [RequirePermission("datascope:update")]
+    [HttpPut("{id}")]
     [ProducesResponseType(typeof(DataScopeDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateDataScope(long id, [FromBody] UpdateDataScopeDto dto)
     {
@@ -94,7 +89,7 @@ public class DataScopeController : BaseApiController
         var result = await _dataScopeService.UpdateAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage!);
         }
         return Ok(result.Data);
     }
@@ -103,17 +98,16 @@ public class DataScopeController : BaseApiController
     /// Deletes a data scope.
     /// </summary>
     /// <param name="id">Data scope ID</param>
-    [HttpDelete("{id:long}")]
-    [RequirePermission("datascope:delete")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(bool),StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteDataScope(long id)
     {
         _logger.LogInformation("Deleting data scope with ID: {DataScopeId}", id);
         var result = await _dataScopeService.DeactivateAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage!);
         }
-        return NoContent();
+        return Ok(true);
     }
 }

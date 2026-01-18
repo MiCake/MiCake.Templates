@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RBACWeb.Application.Services.Authorization;
 using RBACWeb.Contracts.Dtos.Authorization;
-using RBACWeb.Web.Authorization;
 
 namespace RBACWeb.Web.Controllers;
 
@@ -31,7 +30,6 @@ public class RoleController : BaseApiController
     /// Retrieves all roles.
     /// </summary>
     [HttpGet]
-    [RequirePermission("role:read")]
     [ProducesResponseType(typeof(IEnumerable<RoleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllRoles()
     {
@@ -39,7 +37,7 @@ public class RoleController : BaseApiController
         var result = await _roleService.GetAllAsync(HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -48,8 +46,7 @@ public class RoleController : BaseApiController
     /// Retrieves a role by ID.
     /// </summary>
     /// <param name="id">Role ID</param>
-    [HttpGet("{id:long}")]
-    [RequirePermission("role:read")]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(RoleDetailDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRoleById(long id)
     {
@@ -57,7 +54,7 @@ public class RoleController : BaseApiController
         var result = await _roleService.GetByIdAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -67,7 +64,6 @@ public class RoleController : BaseApiController
     /// </summary>
     /// <param name="dto">Role creation data</param>
     [HttpPost]
-    [RequirePermission("role:create")]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto)
     {
@@ -75,9 +71,9 @@ public class RoleController : BaseApiController
         var result = await _roleService.CreateAsync(dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return CreatedAtAction(nameof(GetRoleById), new { id = result.Data!.Id }, result.Data);
+        return Ok(result.Data);
     }
 
     /// <summary>
@@ -85,8 +81,7 @@ public class RoleController : BaseApiController
     /// </summary>
     /// <param name="id">Role ID</param>
     /// <param name="dto">Role update data</param>
-    [HttpPut("{id:long}")]
-    [RequirePermission("role:update")]
+    [HttpPut("{id}")]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateRole(long id, [FromBody] UpdateRoleDto dto)
     {
@@ -94,7 +89,7 @@ public class RoleController : BaseApiController
         var result = await _roleService.UpdateAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -103,8 +98,7 @@ public class RoleController : BaseApiController
     /// Deletes a role.
     /// </summary>
     /// <param name="id">Role ID</param>
-    [HttpDelete("{id:long}")]
-    [RequirePermission("role:delete")]
+    [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteRole(long id)
     {
@@ -112,9 +106,9 @@ public class RoleController : BaseApiController
         var result = await _roleService.DeleteAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 
     /// <summary>
@@ -122,18 +116,17 @@ public class RoleController : BaseApiController
     /// </summary>
     /// <param name="id">Role ID</param>
     /// <param name="dto">Permission assignment data</param>
-    [HttpPost("{id:long}/permissions")]
-    [RequirePermission("role:manage")]
+    [HttpPost("{id}/permissions")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> AssignPermissions(long id, [FromBody] AssignPermissionsDto dto)
     {
-        _logger.LogInformation("Assigning {Count} permissions to role {RoleId}", dto.PermissionIds.Count(), id);
+        _logger.LogInformation("Assigning {Count} permissions to role {RoleId}", dto.PermissionIds.Count, id);
         var result = await _roleService.AssignPermissionsAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 
     /// <summary>
@@ -141,17 +134,15 @@ public class RoleController : BaseApiController
     /// </summary>
     /// <param name="id">Role ID</param>
     /// <param name="dto">Data scope assignment data</param>
-    [HttpPost("{id:long}/datascopes")]
-    [RequirePermission("role:manage")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpPost("{id}/datascopes")]
     public async Task<IActionResult> AssignDataScopes(long id, [FromBody] AssignDataScopesDto dto)
     {
-        _logger.LogInformation("Assigning {Count} data scopes to role {RoleId}", dto.DataScopeIds.Count(), id);
+        _logger.LogInformation("Assigning {Count} data scopes to role {RoleId}", dto.DataScopeIds.Count, id);
         var result = await _roleService.AssignDataScopesAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 }

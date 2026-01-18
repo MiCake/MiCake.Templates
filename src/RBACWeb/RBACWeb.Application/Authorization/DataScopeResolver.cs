@@ -33,6 +33,8 @@ public class DataScopeResolver : IDataScopeResolver
 
     public async Task<DataScopeFilter> GetDataScopeAsync(long userId, CancellationToken cancellationToken = default)
     {
+        _logger.LogDebug("Resolving data scope for user {UserId}", userId);
+
         var dataScopes = await GetUserDataScopesAsync(userId, cancellationToken);
 
         if (dataScopes.Count == 0)
@@ -53,7 +55,7 @@ public class DataScopeResolver : IDataScopeResolver
             .ThenBy(ds => ds.Type) // Lower type value = higher priority (All = 1)
             .ToList();
 
-        var primaryScope = orderedScopes.First();
+        var primaryScope = orderedScopes[0];
 
         return new DataScopeFilter
         {
@@ -65,6 +67,8 @@ public class DataScopeResolver : IDataScopeResolver
 
     public async Task<IReadOnlyList<DataScope>> GetUserDataScopesAsync(long userId, CancellationToken cancellationToken = default)
     {
+        _logger.LogDebug("Fetching data scopes for user {UserId}", userId);
+
         var cacheKey = $"{UserDataScopesCacheKeyPrefix}{userId}";
 
         var cachedScopes = await _cacheService.GetAsync<List<DataScope>>(cacheKey, cancellationToken);
@@ -106,6 +110,7 @@ public class DataScopeResolver : IDataScopeResolver
 
     public async Task<bool> HasFullAccessAsync(long userId, CancellationToken cancellationToken = default)
     {
+        _logger.LogDebug("Checking full data access for user {UserId}", userId);
         var dataScope = await GetDataScopeAsync(userId, cancellationToken);
         return dataScope.HasFullAccess;
     }

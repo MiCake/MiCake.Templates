@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RBACWeb.Application.Services.Authorization;
 using RBACWeb.Contracts.Dtos.Authorization;
-using RBACWeb.Web.Authorization;
 
 namespace RBACWeb.Web.Controllers;
 
@@ -31,7 +30,6 @@ public class ResourceController : BaseApiController
     /// Retrieves all resources.
     /// </summary>
     [HttpGet]
-    [RequirePermission("resource:read")]
     [ProducesResponseType(typeof(IEnumerable<ResourceDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllResources()
     {
@@ -39,7 +37,7 @@ public class ResourceController : BaseApiController
         var result = await _resourceService.GetAllAsync(HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -48,7 +46,6 @@ public class ResourceController : BaseApiController
     /// Retrieves resources in tree structure.
     /// </summary>
     [HttpGet("tree")]
-    [RequirePermission("resource:read")]
     [ProducesResponseType(typeof(IEnumerable<ResourceTreeDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetResourceTree()
     {
@@ -56,7 +53,7 @@ public class ResourceController : BaseApiController
         var result = await _resourceService.GetTreeAsync(HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -65,8 +62,7 @@ public class ResourceController : BaseApiController
     /// Retrieves a resource by ID.
     /// </summary>
     /// <param name="id">Resource ID</param>
-    [HttpGet("{id:long}")]
-    [RequirePermission("resource:read")]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetResourceById(long id)
     {
@@ -74,7 +70,7 @@ public class ResourceController : BaseApiController
         var result = await _resourceService.GetByIdAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -84,7 +80,6 @@ public class ResourceController : BaseApiController
     /// </summary>
     /// <param name="dto">Resource creation data</param>
     [HttpPost]
-    [RequirePermission("resource:create")]
     [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateResource([FromBody] CreateResourceDto dto)
     {
@@ -92,9 +87,9 @@ public class ResourceController : BaseApiController
         var result = await _resourceService.CreateAsync(dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return CreatedAtAction(nameof(GetResourceById), new { id = result.Data!.Id }, result.Data);
+        return Ok(result.Data);
     }
 
     /// <summary>
@@ -102,8 +97,7 @@ public class ResourceController : BaseApiController
     /// </summary>
     /// <param name="id">Resource ID</param>
     /// <param name="dto">Resource update data</param>
-    [HttpPut("{id:long}")]
-    [RequirePermission("resource:update")]
+    [HttpPut("{id}")]
     [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateResource(long id, [FromBody] UpdateResourceDto dto)
     {
@@ -111,7 +105,7 @@ public class ResourceController : BaseApiController
         var result = await _resourceService.UpdateAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -120,17 +114,15 @@ public class ResourceController : BaseApiController
     /// Deletes a resource.
     /// </summary>
     /// <param name="id">Resource ID</param>
-    [HttpDelete("{id:long}")]
-    [RequirePermission("resource:delete")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteResource(long id)
     {
         _logger.LogInformation("Deleting resource with ID: {ResourceId}", id);
         var result = await _resourceService.DeactivateAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RBACWeb.Application.Services.Authorization;
 using RBACWeb.Contracts.Dtos.Authorization;
-using RBACWeb.Web.Authorization;
 
 namespace RBACWeb.Web.Controllers;
 
@@ -31,7 +30,6 @@ public class PermissionController : BaseApiController
     /// Retrieves all permissions.
     /// </summary>
     [HttpGet]
-    [RequirePermission("permission:read")]
     [ProducesResponseType(typeof(IEnumerable<PermissionDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllPermissions()
     {
@@ -39,7 +37,7 @@ public class PermissionController : BaseApiController
         var result = await _permissionService.GetAllAsync(HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -48,8 +46,7 @@ public class PermissionController : BaseApiController
     /// Retrieves a permission by ID.
     /// </summary>
     /// <param name="id">Permission ID</param>
-    [HttpGet("{id:long}")]
-    [RequirePermission("permission:read")]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPermissionById(long id)
     {
@@ -57,7 +54,7 @@ public class PermissionController : BaseApiController
         var result = await _permissionService.GetByIdAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -66,8 +63,7 @@ public class PermissionController : BaseApiController
     /// Retrieves permissions by resource ID.
     /// </summary>
     /// <param name="resourceId">Resource ID</param>
-    [HttpGet("by-resource/{resourceId:long}")]
-    [RequirePermission("permission:read")]
+    [HttpGet("by-resource/{resourceId}")]
     [ProducesResponseType(typeof(IEnumerable<PermissionDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPermissionsByResource(long resourceId)
     {
@@ -75,7 +71,7 @@ public class PermissionController : BaseApiController
         var result = await _permissionService.GetByResourceAsync(resourceId, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -85,17 +81,16 @@ public class PermissionController : BaseApiController
     /// </summary>
     /// <param name="dto">Permission creation data</param>
     [HttpPost]
-    [RequirePermission("permission:create")]
-    [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreatePermission([FromBody] CreatePermissionDto dto)
     {
         _logger.LogInformation("Creating new permission: {PermissionCode}", dto.Code);
         var result = await _permissionService.CreateAsync(dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return CreatedAtAction(nameof(GetPermissionById), new { id = result.Data!.Id }, result.Data);
+        return Ok(result.Data);
     }
 
     /// <summary>
@@ -103,8 +98,7 @@ public class PermissionController : BaseApiController
     /// </summary>
     /// <param name="id">Permission ID</param>
     /// <param name="dto">Permission update data</param>
-    [HttpPut("{id:long}")]
-    [RequirePermission("permission:update")]
+    [HttpPut("{id}")]
     [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdatePermission(long id, [FromBody] UpdatePermissionDto dto)
     {
@@ -112,7 +106,7 @@ public class PermissionController : BaseApiController
         var result = await _permissionService.UpdateAsync(id, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -121,17 +115,16 @@ public class PermissionController : BaseApiController
     /// Deletes a permission.
     /// </summary>
     /// <param name="id">Permission ID</param>
-    [HttpDelete("{id:long}")]
-    [RequirePermission("permission:delete")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     public async Task<IActionResult> DeletePermission(long id)
     {
         _logger.LogInformation("Deleting permission with ID: {PermissionId}", id);
         var result = await _permissionService.DeactivateAsync(id, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 }

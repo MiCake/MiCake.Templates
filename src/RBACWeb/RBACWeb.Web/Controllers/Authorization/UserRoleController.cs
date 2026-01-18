@@ -2,14 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RBACWeb.Application.Services.Authorization;
 using RBACWeb.Contracts.Dtos.Authorization;
-using RBACWeb.Web.Authorization;
 
 namespace RBACWeb.Web.Controllers;
 
 /// <summary>
 /// Handles user role assignment operations.
 /// </summary>
-[Route("api/users/{userId:long}/roles")]
+[Route("api/users/{userId}/roles")]
 [ApiController]
 [Authorize]
 public class UserRoleController : BaseApiController
@@ -32,7 +31,6 @@ public class UserRoleController : BaseApiController
     /// </summary>
     /// <param name="userId">User ID</param>
     [HttpGet]
-    [RequirePermission("user:read")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserRoles(long userId)
     {
@@ -40,7 +38,7 @@ public class UserRoleController : BaseApiController
         var result = await _userRoleService.GetUserRolesAsync(userId, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -50,7 +48,6 @@ public class UserRoleController : BaseApiController
     /// </summary>
     /// <param name="userId">User ID</param>
     [HttpGet("permissions")]
-    [RequirePermission("user:read")]
     [ProducesResponseType(typeof(UserPermissionsDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserPermissions(long userId)
     {
@@ -58,7 +55,7 @@ public class UserRoleController : BaseApiController
         var result = await _userRoleService.GetUserPermissionsAsync(userId, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
         return Ok(result.Data);
     }
@@ -69,7 +66,6 @@ public class UserRoleController : BaseApiController
     /// <param name="userId">User ID</param>
     /// <param name="dto">Role assignment data</param>
     [HttpPost]
-    [RequirePermission("user:manage")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> AssignRole(long userId, [FromBody] AssignUserRoleDto dto)
     {
@@ -77,9 +73,9 @@ public class UserRoleController : BaseApiController
         var result = await _userRoleService.AssignRoleAsync(userId, dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return BadRequest(result);
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 
     /// <summary>
@@ -87,17 +83,15 @@ public class UserRoleController : BaseApiController
     /// </summary>
     /// <param name="userId">User ID</param>
     /// <param name="roleId">Role ID to remove</param>
-    [HttpDelete("{roleId:long}")]
-    [RequirePermission("user:manage")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpDelete("{roleId}")]
     public async Task<IActionResult> RemoveRole(long userId, long roleId)
     {
         _logger.LogInformation("Removing role {RoleId} from user {UserId}", roleId, userId);
         var result = await _userRoleService.RemoveRoleAsync(userId, roleId, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {
-            return NotFound();
+            return BadRequest(result.ErrorCode!, result.ErrorMessage);
         }
-        return NoContent();
+        return Ok(true);
     }
 }

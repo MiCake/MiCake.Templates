@@ -8,7 +8,7 @@ namespace RBACWeb.Common.Time;
 /// Using this class instead of DateTime.Now directly enables easier unit testing
 /// by allowing time to be mocked or controlled in test scenarios.
 /// </remarks>
-public class TimeNow
+public static class TimeNow
 {
     /// <summary>
     /// Gets the current local date and time.
