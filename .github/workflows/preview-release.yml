@@ -3,10 +3,10 @@ name: Preview Release
 on:
   push:
     branches:
-      - "releases/preview*"
+      - "release/preview*"
   pull_request:
     branches:
-      - "releases/preview*"
+      - "release/preview*"
     types: [closed]
   workflow_dispatch: # Allow manual trigger for emergency releases
 
@@ -56,8 +56,8 @@ jobs:
         id: preview_version
         run: |
           # Extract version from branch name
-          # Branch format: releases/preview-vX.Y.Z or releases/preview-X.Y.Z
-          BRANCH_NAME=${GITHUB_REF#refs/heads/releases/}
+          # Branch format: release/preview-vX.Y.Z or release/preview-X.Y.Z
+          BRANCH_NAME=${GITHUB_REF#refs/heads/release/}
           
           # Try to extract version from branch name
           if [[ "$BRANCH_NAME" =~ v?([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
@@ -66,7 +66,7 @@ jobs:
             PATCH="${BASH_REMATCH[3]}"
             echo "Extracted version from branch name: $MAJOR.$MINOR.$PATCH"
           else
-            echo "Error: Cannot determine version from branch name '$BRANCH_NAME'. Ensure it follows 'releases/preview-vX.Y.Z' format."
+            echo "Error: Cannot determine version from branch name '$BRANCH_NAME'. Ensure it follows 'release/preview-vX.Y.Z' format."
             exit 1
           fi
           
