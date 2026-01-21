@@ -24,7 +24,7 @@ public class User : AuditAggregateRoot
 
     public string? ProfilePictureUrl { get; private set; }
 
-    public DateTime? LockoutEnd { get; private set; }
+    public DateTimeOffset? LockoutEnd { get; private set; }
 
     public bool LockoutEnabled { get; private set; } = false;
 
@@ -343,7 +343,7 @@ public class User : AuditAggregateRoot
     /// <summary>
     /// Assigns a role to the user.
     /// </summary>
-    public void AssignRole(long roleId, DateTime? expiresAt = null)
+    public void AssignRole(long roleId, DateTimeOffset? expiresAt = null)
     {
         if (_userRoles.Any(ur => ur.RoleId == roleId && ur.IsEffective()))
             throw new InvalidOperationException($"Role {roleId} is already assigned to this user");

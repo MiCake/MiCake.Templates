@@ -24,7 +24,7 @@ public class User : AuditAggregateRoot
 
     public string? ProfilePictureUrl { get; private set; }
 
-    public DateTime? LockoutEnd { get; private set; }
+    public DateTimeOffset? LockoutEnd { get; private set; }
 
     public bool LockoutEnabled { get; private set; } = false;
 

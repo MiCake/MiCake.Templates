@@ -4,14 +4,10 @@ namespace StandardWeb.Common.Time;
 /// Provides a centralized access point for current time.
 /// Useful for testing and time zone management across the application.
 /// </summary>
-/// <remarks>
-/// Using this class instead of DateTime.Now directly enables easier unit testing
-/// by allowing time to be mocked or controlled in test scenarios.
-/// </remarks>
 public static class TimeNow
 {
     /// <summary>
-    /// Gets the current local date and time.
+    /// Gets the current UTC date and time.
     /// </summary>
-    public static DateTime Now { get => DateTime.UtcNow; }
+    public static DateTimeOffset Now { get => DateTimeOffset.UtcNow; }
 }

@@ -11,8 +11,8 @@ public class RoleDto
     public string? Description { get; set; }
     public bool IsSystem { get; set; }
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }
 
 /// <summary>

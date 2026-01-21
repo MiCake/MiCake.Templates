@@ -8,8 +8,8 @@ public class UserRoleDto
     public long RoleId { get; set; }
     public string RoleCode { get; set; } = null!;
     public string RoleName { get; set; } = null!;
-    public DateTime AssignedAt { get; set; }
-    public DateTime? ExpiresAt { get; set; }
+    public DateTimeOffset AssignedAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -19,7 +19,7 @@ public class UserRoleDto
 public class AssignUserRoleDto
 {
     public long RoleId { get; set; }
-    public DateTime? ExpiresAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
 }
 
 /// <summary>

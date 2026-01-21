@@ -14,9 +14,9 @@ public record AppSettingDto(
     bool IsEncrypted,
     string? ValidationPattern,
     long? CreatedBy,
-    DateTime CreatedAt,
+    DateTimeOffset CreatedAt,
     long? ModifiedBy,
-    DateTime? UpdatedAt);
+    DateTimeOffset? UpdatedAt);
 
 /// <summary>
 /// DTO for creating a new AppSetting.

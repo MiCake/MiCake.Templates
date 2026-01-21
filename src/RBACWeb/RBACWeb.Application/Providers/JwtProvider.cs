@@ -52,7 +52,7 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(finalClaims),
-            Expires = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes),
+            Expires = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes).UtcDateTime,
             Issuer = _jwtConfig.Issuer,
             Audience = _jwtConfig.Audience,
             SigningCredentials = credentials
@@ -67,9 +67,9 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         return new JwtTokenModel
         {
             JwtToken = jwtToken,
-            Expiration = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes),
+            Expiration = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes).UtcDateTime,
             RefreshToken = refreshToken,
-            RefreshTokenExpiration = TimeNow.Now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes)
+            RefreshTokenExpiration = TimeNow.Now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes).UtcDateTime
         };
     }
 

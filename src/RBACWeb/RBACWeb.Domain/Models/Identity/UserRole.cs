@@ -22,12 +22,12 @@ public class UserRole : AuditEntity
     /// <summary>
     /// When the role was assigned to the user.
     /// </summary>
-    public DateTime AssignedAt { get; private set; }
+    public DateTimeOffset AssignedAt { get; private set; }
 
     /// <summary>
     /// Optional expiration date for temporary role assignments.
     /// </summary>
-    public DateTime? ExpiresAt { get; private set; }
+    public DateTimeOffset? ExpiresAt { get; private set; }
 
     /// <summary>
     /// Whether the role assignment is active.
@@ -53,7 +53,7 @@ public class UserRole : AuditEntity
     /// <summary>
     /// Creates a new user-role assignment.
     /// </summary>
-    public static UserRole Create(long userId, long roleId, DateTime? expiresAt = null)
+    public static UserRole Create(long userId, long roleId, DateTimeOffset? expiresAt = null)
     {
         if (userId <= 0)
             throw new ArgumentException("User ID must be positive", nameof(userId));
@@ -109,7 +109,7 @@ public class UserRole : AuditEntity
     /// <summary>
     /// Extends the expiration date.
     /// </summary>
-    public void ExtendExpiration(DateTime newExpiresAt)
+    public void ExtendExpiration(DateTimeOffset newExpiresAt)
     {
         if (newExpiresAt <= TimeNow.Now)
             throw new ArgumentException("New expiration date must be in the future", nameof(newExpiresAt));

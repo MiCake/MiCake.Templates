@@ -12,9 +12,6 @@ namespace RBACWeb.Domain.Models.Identity;
 public class UserLoginHistory : AuditEntity
 {
     [Required]
-    public DateTime RecordedAt { get; private set; }
-
-    [Required]
     public UserLoginActionType ActionType { get; private set; }
 
     [MaxLength(45)]
@@ -60,7 +57,6 @@ public class UserLoginHistory : AuditEntity
         return new UserLoginHistory
         {
             UserId = userId,
-            RecordedAt = TimeNow.Now,
             ActionType = action,
             IpAddress = ipAddress,
             UserAgent = userAgent,
@@ -88,7 +84,6 @@ public class UserLoginHistory : AuditEntity
         return new UserLoginHistory
         {
             UserId = userId,
-            RecordedAt = TimeNow.Now,
             ActionType = action,
             IpAddress = ipAddress,
             UserAgent = userAgent,

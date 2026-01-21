@@ -51,12 +51,12 @@ public class ExternalLoginProvider : AuditEntity
     /// <summary>
     /// First bind time
     /// </summary>
-    public DateTime BindTime { get; private set; }
+    public DateTimeOffset BindTime { get; private set; }
 
     /// <summary>
     /// Last login time
     /// </summary>
-    public DateTime? LastLoginTime { get; private set; }
+    public DateTimeOffset? LastLoginTime { get; private set; }
 
     /// <summary>
     /// Whether the account is unbound
@@ -66,7 +66,7 @@ public class ExternalLoginProvider : AuditEntity
     /// <summary>
     /// Unbind time
     /// </summary>
-    public DateTime? UnboundTime { get; private set; }
+    public DateTimeOffset? UnboundTime { get; private set; }
 
 
     #region Navigation Properties

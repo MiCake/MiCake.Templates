@@ -55,7 +55,7 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<UserLoginHistory>(builder =>
         {
-            builder.HasIndex(x => x.RecordedAt);
+            builder.HasIndex(x => x.CreatedAt);
             builder.HasOne(x => x.User).WithMany(u => u.LoginHistory).HasForeignKey(x => x.UserId);
         });
 

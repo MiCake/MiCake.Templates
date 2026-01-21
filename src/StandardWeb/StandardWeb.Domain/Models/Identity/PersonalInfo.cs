@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using StandardWeb.Common.Time;
 
 namespace StandardWeb.Domain.Models.Identity;
 
@@ -29,13 +30,13 @@ public record PersonalInfo : RecordValueObject
     /// <summary>
     /// Date of birth
     /// </summary>
-    public DateTime? DateOfBirth { get; init; }
+    public DateTimeOffset? DateOfBirth { get; init; }
 
     private PersonalInfo()
     {
     }
 
-    private PersonalInfo(string? firstName, string? lastName, string? displayName, DateTime? dateOfBirth)
+    private PersonalInfo(string? firstName, string? lastName, string? displayName, DateTimeOffset? dateOfBirth)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -46,15 +47,15 @@ public record PersonalInfo : RecordValueObject
     /// <summary>
     /// Creates a PersonalInfo instance.
     /// </summary>
-    public static PersonalInfo Create(string? firstName = null, string? lastName = null, string? displayName = null, DateTime? dateOfBirth = null)
+    public static PersonalInfo Create(string? firstName = null, string? lastName = null, string? displayName = null, DateTimeOffset? dateOfBirth = null)
     {
         // Validate date of birth if provided
         if (dateOfBirth.HasValue)
         {
-            if (dateOfBirth.Value > DateTime.Today)
+            if (dateOfBirth.Value > TimeNow.Now)
                 throw new ArgumentException("Date of birth cannot be in the future", nameof(dateOfBirth));
 
-            var age = DateTime.Today.Year - dateOfBirth.Value.Year;
+            var age = TimeNow.Now.Year - dateOfBirth.Value.Year;
             if (age > 150)
                 throw new ArgumentException("Date of birth is too far in the past", nameof(dateOfBirth));
         }
@@ -96,11 +97,12 @@ public record PersonalInfo : RecordValueObject
             if (!DateOfBirth.HasValue)
                 return null;
 
-            var today = DateTime.Today;
+            var today = TimeNow.Now;
             var age = today.Year - DateOfBirth.Value.Year;
 
             // Adjust if birthday hasn't occurred this year yet
-            if (DateOfBirth.Value.Date > today.AddYears(-age))
+            if (DateOfBirth.Value.Month > today.Month || 
+                (DateOfBirth.Value.Month == today.Month && DateOfBirth.Value.Day > today.Day))
                 age--;
 
             return age;

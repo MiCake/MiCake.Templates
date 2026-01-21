@@ -61,7 +61,7 @@ public class UserTests
         var firstName = "John";
         var lastName = "Doe";
         var displayName = "JohnD";
-        var dateOfBirth = new DateTime(1990, 1, 1);
+        var dateOfBirth = new DateTimeOffset(1990, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         // Act
         user.UpdateProfile(PersonalInfo.Create(

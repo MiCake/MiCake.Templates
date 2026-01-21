@@ -17,7 +17,7 @@ public class UserToken : AuditEntity
     [Required]
     public string Value { get; private set; } = string.Empty;
 
-    public DateTime? ExpiryDate { get; private set; }
+    public DateTimeOffset? ExpiryDate { get; private set; }
 
     #region Navigation Properties
 
@@ -27,7 +27,7 @@ public class UserToken : AuditEntity
 
     protected UserToken() { }
 
-    public static UserToken Create(UserTokenType type, string value, DateTime? expiryDate = null)
+    public static UserToken Create(UserTokenType type, string value, DateTimeOffset? expiryDate = null)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Token value cannot be empty", nameof(value));
@@ -48,7 +48,7 @@ public class UserToken : AuditEntity
         Value = value;
     }
 
-    public void SetExpiry(DateTime expiry)
+    public void SetExpiry(DateTimeOffset expiry)
     {
         ExpiryDate = expiry;
     }

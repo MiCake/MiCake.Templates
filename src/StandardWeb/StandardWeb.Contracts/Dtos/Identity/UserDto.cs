@@ -6,6 +6,6 @@ public class UserDto
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? DisplayName { get; set; }
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

@@ -10,7 +10,7 @@ public class JwtTokenModel
     /// <summary>
     /// The expiration time of the JWT token.
     /// </summary>
-    public DateTime Expiration { get; set; }
+    public DateTimeOffset Expiration { get; set; }
 
     /// <summary>
     /// The generated refresh token.
@@ -20,5 +20,5 @@ public class JwtTokenModel
     /// <summary>
     /// The expiration time of the refresh token.
     /// </summary>
-    public DateTime RefreshTokenExpiration { get; set; }
+    public DateTimeOffset RefreshTokenExpiration { get; set; }
 }

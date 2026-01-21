@@ -65,7 +65,7 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<UserLoginHistory>(builder =>
         {
-            builder.HasIndex(x => x.RecordedAt);
+            builder.HasIndex(x => x.CreatedAt);
             builder.HasOne(x => x.User).WithMany(u => u.LoginHistory).HasForeignKey(x => x.UserId);
         });
 
@@ -82,33 +82,28 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<Role>(builder =>
         {
-            builder.ToTable("Roles");
             builder.HasIndex(x => x.Code).IsUnique();
         });
 
         modelBuilder.Entity<Permission>(builder =>
         {
-            builder.ToTable("Permissions");
             builder.HasIndex(x => x.Code).IsUnique();
             builder.HasOne(x => x.Resource).WithMany(r => r.Permissions).HasForeignKey(x => x.ResourceId);
         });
 
         modelBuilder.Entity<Resource>(builder =>
         {
-            builder.ToTable("Resources");
             builder.HasIndex(x => x.Code).IsUnique();
             builder.HasOne(x => x.Parent).WithMany(r => r.Children).HasForeignKey(x => x.ParentId);
         });
 
         modelBuilder.Entity<DataScope>(builder =>
         {
-            builder.ToTable("DataScopes");
             builder.HasIndex(x => x.Code).IsUnique();
         });
 
         modelBuilder.Entity<RolePermission>(builder =>
         {
-            builder.ToTable("RolePermissions");
             builder.HasIndex(x => new { x.RoleId, x.PermissionId }).IsUnique();
             builder.HasOne(x => x.Role).WithMany(r => r.RolePermissions).HasForeignKey(x => x.RoleId);
             builder.HasOne(x => x.Permission).WithMany(p => p.RolePermissions).HasForeignKey(x => x.PermissionId);
@@ -116,7 +111,6 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<RoleDataScope>(builder =>
         {
-            builder.ToTable("RoleDataScopes");
             builder.HasIndex(x => new { x.RoleId, x.DataScopeId }).IsUnique();
             builder.HasOne(x => x.Role).WithMany(r => r.RoleDataScopes).HasForeignKey(x => x.RoleId);
             builder.HasOne(x => x.DataScope).WithMany(ds => ds.RoleDataScopes).HasForeignKey(x => x.DataScopeId);
@@ -128,25 +122,12 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<AppSetting>(builder =>
         {
-            builder.ToTable("AppSettings");
             builder.HasKey(x => x.Id);
 
             // Unique constraint on SettingGroup + Key
             builder.HasIndex(x => new { x.SettingGroup, x.Key }).IsUnique();
             builder.HasIndex(x => x.SettingGroup);
             builder.HasIndex(x => x.UpdatedAt);
-
-            // Properties
-            builder.Property(x => x.SettingGroup).IsRequired();
-            builder.Property(x => x.Key).HasMaxLength(100).IsRequired();
-            builder.Property(x => x.Value).IsRequired();
-            builder.Property(x => x.DataType).IsRequired();
-            builder.Property(x => x.Description).HasMaxLength(500);
-            builder.Property(x => x.IsEncrypted).IsRequired();
-            builder.Property(x => x.ValidationPattern).HasMaxLength(500);
-
-            // Note: Audit fields (CreatedBy, CreatedAt, ModifiedBy, UpdatedAt) 
-            // are auto-configured by MiCake framework
         });
 
         #endregion
