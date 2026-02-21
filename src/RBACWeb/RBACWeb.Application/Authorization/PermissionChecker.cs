@@ -17,8 +17,10 @@ public class PermissionChecker : IPermissionChecker
     private readonly ILogger<PermissionChecker> _logger;
 
     private const string UserRolesCacheKeyPrefix = "user:roles:";
-    private const string RolePermissionsCacheKeyPrefix = "role:permissions:";
+    private const string UserPermissionsCacheKeyPrefix = "user:permissions:";
+    private const string UserPermissionsVersionKey = "user:permissions:version";
     private static readonly TimeSpan DefaultCacheExpiration = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan PermissionVersionExpiration = TimeSpan.FromDays(1);
 
     public PermissionChecker(
         IUserRepo userRepo,
@@ -40,8 +42,17 @@ public class PermissionChecker : IPermissionChecker
 
     public async Task<IReadOnlyList<string>> GetUserPermissionCodesAsync(long userId, CancellationToken cancellationToken = default)
     {
+        var cacheKey = BuildUserPermissionsCacheKey(userId);
+
+        var cachedCodes = await _cacheService.GetAsync<List<string>>(cacheKey, cancellationToken);
+        if (cachedCodes != null)
+            return cachedCodes;
+
         var permissions = await GetUserPermissionsAsync(userId, cancellationToken);
-        return permissions.Select(p => p.Code).ToList();
+        var permissionCodes = permissions.Select(p => p.Code).Distinct().ToList();
+
+        await _cacheService.SetAsync(cacheKey, permissionCodes, DefaultCacheExpiration, cancellationToken);
+        return permissionCodes;
     }
 
     public async Task<IReadOnlyList<Permission>> GetUserPermissionsAsync(long userId, CancellationToken cancellationToken = default)
@@ -52,9 +63,13 @@ public class PermissionChecker : IPermissionChecker
 
         var allPermissions = new List<Permission>();
 
-        foreach (var roleId in roleIds)
+        var roles = await _roleRepo.GetByIdsWithPermissionsAsync(roleIds, cancellationToken);
+        foreach (var role in roles)
         {
-            var permissions = await GetRolePermissionsFromCacheAsync(roleId, cancellationToken);
+            var permissions = role.RolePermissions
+                .Where(rp => rp.IsGranted && rp.Permission.IsActive)
+                .Select(rp => rp.Permission)
+                .ToList();
             allPermissions.AddRange(permissions);
         }
 
@@ -83,7 +98,7 @@ public class PermissionChecker : IPermissionChecker
 
     public async Task<IReadOnlyList<long>> GetUserRoleIdsAsync(long userId, CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"{UserRolesCacheKeyPrefix}{userId}";
+        var cacheKey = BuildUserRolesCacheKey(userId);
 
         var cachedRoleIds = await _cacheService.GetAsync<List<long>>(cacheKey, cancellationToken);
         if (cachedRoleIds != null)
@@ -112,42 +127,40 @@ public class PermissionChecker : IPermissionChecker
 
     public async Task InvalidateUserCacheAsync(long userId)
     {
-        var cacheKey = $"{UserRolesCacheKeyPrefix}{userId}";
-        await _cacheService.RemoveAsync(cacheKey);
+        var roleCacheKey = BuildUserRolesCacheKey(userId);
+        var permissionCacheKey = BuildUserPermissionsCacheKey(userId);
+        await _cacheService.RemoveAsync(roleCacheKey);
+        await _cacheService.RemoveAsync(permissionCacheKey);
         _logger.LogDebug("Invalidated user cache for user {UserId}", userId);
     }
 
     public async Task InvalidateRoleCacheAsync(long roleId)
     {
-        var cacheKey = $"{RolePermissionsCacheKeyPrefix}{roleId}";
-        await _cacheService.RemoveAsync(cacheKey);
-        _logger.LogDebug("Invalidated role cache for role {RoleId}", roleId);
+        var nextVersion = await IncrementUserPermissionsVersionAsync();
+        _logger.LogDebug("Bumped user permission cache version to {Version} for role {RoleId}", nextVersion, roleId);
     }
 
-    private async Task<IReadOnlyList<Permission>> GetRolePermissionsFromCacheAsync(long roleId, CancellationToken cancellationToken)
+    private string BuildUserRolesCacheKey(long userId)
     {
-        var cacheKey = $"{RolePermissionsCacheKeyPrefix}{roleId}";
+        return $"{UserRolesCacheKeyPrefix}{userId}";
+    }
 
-        var cachedPermissions = await _cacheService.GetAsync<List<Permission>>(cacheKey, cancellationToken);
-        if (cachedPermissions != null)
-            return cachedPermissions;
+    private string BuildUserPermissionsCacheKey(long userId)
+    {
+        var version = GetUserPermissionsVersion();
+        return $"{UserPermissionsCacheKeyPrefix}{userId}:{version}";
+    }
 
-        // Load from database
-        var role = await _roleRepo.GetWithPermissionsAsync(roleId, needTracking: false, cancellationToken: cancellationToken);
-        if (role is null)
-        {
-            _logger.LogWarning("Role {RoleId} not found when getting permissions", roleId);
-            return [];
-        }
+    private int GetUserPermissionsVersion()
+    {
+        return _cacheService.Get<int?>(UserPermissionsVersionKey) ?? 1;
+    }
 
-        var permissions = role.RolePermissions
-            .Where(rp => rp.IsGranted && rp.Permission.IsActive)
-            .Select(rp => rp.Permission)
-            .ToList();
-
-        // Cache the result
-        await _cacheService.SetAsync(cacheKey, permissions, DefaultCacheExpiration, cancellationToken);
-
-        return permissions;
+    private async Task<int> IncrementUserPermissionsVersionAsync(CancellationToken cancellationToken = default)
+    {
+        var current = await _cacheService.GetAsync<int?>(UserPermissionsVersionKey, cancellationToken) ?? 1;
+        var next = current + 1;
+        await _cacheService.SetAsync(UserPermissionsVersionKey, next, PermissionVersionExpiration, cancellationToken);
+        return next;
     }
 }
