@@ -19,7 +19,7 @@ public class AuthorizationMapper : Profile
 
         // Permission mappings
         CreateMap<Permission, PermissionDto>()
-            .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.Resource.Name));
+            .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.Resource != null ? src.Resource.Name : null));
 
         // Resource mappings
         CreateMap<Resource, ResourceDto>();
@@ -31,7 +31,6 @@ public class AuthorizationMapper : Profile
 
         // UserRole mappings
         CreateMap<UserRole, UserRoleDto>()
-            .ForMember(dest => dest.RoleCode, opt => opt.MapFrom(src => src.Role.Code))
             .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
     }
 }

@@ -74,10 +74,13 @@ public class PermissionService
         if (await _permissionRepo.ExistsByCodeAsync(dto.Code, cancellationToken))
             return OperationResult<PermissionDto?>.Failure("Permission with this code already exists", AuthorizationErrorCodes.PermissionAlreadyExists);
 
-        // Validate resource exists
-        var resource = await _resourceRepo.FindAsync(dto.ResourceId, cancellationToken);
-        if (resource is null)
-            return OperationResult<PermissionDto?>.Failure("Resource not found", AuthorizationErrorCodes.ResourceNotFound);
+        // Validate resource exists when provided
+        if (dto.ResourceId.HasValue)
+        {
+            var resource = await _resourceRepo.FindAsync(dto.ResourceId.Value, cancellationToken);
+            if (resource is null)
+                return OperationResult<PermissionDto?>.Failure("Resource not found", AuthorizationErrorCodes.ResourceNotFound);
+        }
 
         var permission = Permission.Create(dto.Code, dto.Name, dto.ResourceId, (DomainPermissionAction)dto.Action, dto.Description);
 

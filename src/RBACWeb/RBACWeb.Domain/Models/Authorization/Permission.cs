@@ -31,9 +31,9 @@ public class Permission : AuditAggregateRoot
     public string? Description { get; private set; }
 
     /// <summary>
-    /// The resource this permission applies to.
+    /// Optional resource this permission applies to.
     /// </summary>
-    public long ResourceId { get; private set; }
+    public long? ResourceId { get; private set; }
 
     /// <summary>
     /// The action type this permission grants.
@@ -48,9 +48,9 @@ public class Permission : AuditAggregateRoot
     #region Navigation Properties
 
     /// <summary>
-    /// The resource this permission applies to.
+    /// Optional resource this permission applies to.
     /// </summary>
-    public Resource Resource { get; private set; } = null!;
+    public Resource? Resource { get; private set; }
 
     /// <summary>
     /// Roles that have this permission.
@@ -68,7 +68,7 @@ public class Permission : AuditAggregateRoot
     public static Permission Create(
         string code,
         string name,
-        long resourceId,
+        long? resourceId,
         PermissionAction action,
         string? description = null)
     {
@@ -78,7 +78,7 @@ public class Permission : AuditAggregateRoot
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Permission name cannot be empty", nameof(name));
 
-        if (resourceId <= 0)
+        if (resourceId.HasValue && resourceId.Value <= 0)
             throw new ArgumentException("Resource ID must be positive", nameof(resourceId));
 
         return new Permission

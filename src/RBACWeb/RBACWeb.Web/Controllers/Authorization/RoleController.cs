@@ -67,7 +67,7 @@ public class RoleController : BaseApiController
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto)
     {
-        _logger.LogInformation("Creating new role: {RoleCode}", dto.Code);
+        _logger.LogInformation("Creating new role: {RoleName}", dto.Name);
         var result = await _roleService.CreateAsync(dto, HttpContext.RequestAborted);
         if (!result.IsSuccess)
         {

@@ -4,12 +4,11 @@ using Microsoft.Extensions.Options;
 namespace RBACWeb.Web.Authorization;
 
 /// <summary>
-/// Dynamic policy provider that creates authorization policies for permission and role requirements.
+/// Dynamic policy provider that creates authorization policies for permission requirements.
 /// </summary>
 public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
 {
     private const string PermissionPolicyPrefix = "Permission:";
-    private const string RolePolicyPrefix = "Role:";
 
     private readonly DefaultAuthorizationPolicyProvider _fallbackPolicyProvider;
 
@@ -25,15 +24,6 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
             var permissionCode = policyName[PermissionPolicyPrefix.Length..];
             var policy = new AuthorizationPolicyBuilder()
                 .AddRequirements(new PermissionRequirement(permissionCode))
-                .Build();
-            return Task.FromResult<AuthorizationPolicy?>(policy);
-        }
-
-        if (policyName.StartsWith(RolePolicyPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            var roleCode = policyName[RolePolicyPrefix.Length..];
-            var policy = new AuthorizationPolicyBuilder()
-                .AddRequirements(new RoleRequirement(roleCode))
                 .Build();
             return Task.FromResult<AuthorizationPolicy?>(policy);
         }

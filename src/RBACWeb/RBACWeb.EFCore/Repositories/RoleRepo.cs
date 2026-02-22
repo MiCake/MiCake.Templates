@@ -11,12 +11,6 @@ public class RoleRepo : BasePagingRepository<Role>, IRoleRepo
     {
     }
 
-    public async Task<Role?> GetByCodeAsync(string code, bool needTracking = true, CancellationToken cancellationToken = default)
-    {
-        return await GetDbSet(needTracking)
-            .FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
-    }
-
     public async Task<Role?> GetWithPermissionsAsync(long id, bool needTracking = true, CancellationToken cancellationToken = default)
     {
         return await GetDbSet(needTracking)
@@ -62,9 +56,4 @@ public class RoleRepo : BasePagingRepository<Role>, IRoleRepo
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsByCodeAsync(string code, CancellationToken cancellationToken = default)
-    {
-        return await GetDbSet(false)
-            .AnyAsync(r => r.Code == code, cancellationToken);
-    }
 }

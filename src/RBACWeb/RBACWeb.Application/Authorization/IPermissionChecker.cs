@@ -28,11 +28,6 @@ public interface IPermissionChecker
     Task<IReadOnlyList<Role>> GetUserRolesAsync(long userId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if the user has a specific role.
-    /// </summary>
-    Task<bool> IsInRoleAsync(long userId, string roleCode, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Gets all role IDs for a user.
     /// </summary>
     Task<IReadOnlyList<long>> GetUserRoleIdsAsync(long userId, CancellationToken cancellationToken = default);

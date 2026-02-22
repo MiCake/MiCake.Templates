@@ -59,12 +59,11 @@ public static class StartUpServiceExtension
     /// </summary>
     public static IServiceCollection AddRBACAuthorization(this IServiceCollection services)
     {
-        // Register custom policy provider that creates policies dynamically for permission/role requirements
+        // Register custom policy provider that creates policies dynamically for permission requirements
         services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
 
         // Register authorization handlers
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-        services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
 
         return services;
     }

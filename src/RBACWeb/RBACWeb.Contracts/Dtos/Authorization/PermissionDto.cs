@@ -11,7 +11,7 @@ public class PermissionDto
     public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public long ResourceId { get; set; }
+    public long? ResourceId { get; set; }
     public string? ResourceName { get; set; }
     public PermissionAction Action { get; set; }
     public bool IsActive { get; set; }
@@ -25,7 +25,7 @@ public class CreatePermissionDto
     public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public long ResourceId { get; set; }
+    public long? ResourceId { get; set; }
     public PermissionAction Action { get; set; }
 }
 

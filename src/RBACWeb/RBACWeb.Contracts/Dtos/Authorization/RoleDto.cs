@@ -6,7 +6,6 @@ namespace RBACWeb.Contracts.Dtos.Authorization;
 public class RoleDto
 {
     public long Id { get; set; }
-    public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public bool IsSystem { get; set; }
@@ -29,7 +28,6 @@ public class RoleDetailDto : RoleDto
 /// </summary>
 public class CreateRoleDto
 {
-    public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
 }

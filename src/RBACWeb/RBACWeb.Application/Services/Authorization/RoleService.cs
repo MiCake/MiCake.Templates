@@ -64,13 +64,9 @@ public class RoleService
     /// </summary>
     public async Task<OperationResult<RoleDto?>> CreateAsync(CreateRoleDto dto, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Creating role with code: {Code}", dto.Code);
+        _logger.LogInformation("Creating role: {Name}", dto.Name);
 
-        // Check for duplicate code
-        if (await _roleRepo.ExistsByCodeAsync(dto.Code, cancellationToken))
-            return OperationResult<RoleDto?>.Failure("Role with this code already exists", AuthorizationErrorCodes.RoleAlreadyExists);
-
-        var role = Role.Create(dto.Code, dto.Name, dto.Description);
+        var role = Role.Create(dto.Name, dto.Description);
 
         await _roleRepo.AddAsync(role, cancellationToken);
         await _roleRepo.SaveChangesAsync(cancellationToken);

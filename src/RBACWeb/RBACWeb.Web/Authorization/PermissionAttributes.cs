@@ -19,19 +19,3 @@ public class RequirePermissionAttribute : AuthorizeAttribute
     }
 }
 
-/// <summary>
-/// Specifies that the decorated action or controller requires the specified role.
-/// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-public class RequireRoleAttribute : AuthorizeAttribute
-{
-    /// <summary>
-    /// The role code required to access the resource.
-    /// </summary>
-    public string RoleCode { get; }
-
-    public RequireRoleAttribute(string roleCode) : base(policy: $"Role:{roleCode}")
-    {
-        RoleCode = roleCode;
-    }
-}

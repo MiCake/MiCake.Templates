@@ -90,12 +90,6 @@ public class PermissionChecker : IPermissionChecker
         return roles;
     }
 
-    public async Task<bool> IsInRoleAsync(long userId, string roleCode, CancellationToken cancellationToken = default)
-    {
-        var roles = await GetUserRolesAsync(userId, cancellationToken);
-        return roles.Any(r => r.Code == roleCode);
-    }
-
     public async Task<IReadOnlyList<long>> GetUserRoleIdsAsync(long userId, CancellationToken cancellationToken = default)
     {
         var cacheKey = BuildUserRolesCacheKey(userId);

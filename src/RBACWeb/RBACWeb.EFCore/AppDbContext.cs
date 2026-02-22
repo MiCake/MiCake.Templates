@@ -82,13 +82,15 @@ public class AppDbContext(DbContextOptions options) : MiCakeDbContext(options)
 
         modelBuilder.Entity<Role>(builder =>
         {
-            builder.HasIndex(x => x.Code).IsUnique();
         });
 
         modelBuilder.Entity<Permission>(builder =>
         {
             builder.HasIndex(x => x.Code).IsUnique();
-            builder.HasOne(x => x.Resource).WithMany(r => r.Permissions).HasForeignKey(x => x.ResourceId);
+            builder.HasOne(x => x.Resource)
+                .WithMany(r => r.Permissions)
+                .HasForeignKey(x => x.ResourceId)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<Resource>(builder =>

@@ -8,11 +8,6 @@ namespace RBACWeb.Domain.Repositories;
 public interface IRoleRepo : IRepositoryHasPagingQuery<Role, long>
 {
     /// <summary>
-    /// Gets a role by its unique code.
-    /// </summary>
-    Task<Role?> GetByCodeAsync(string code, bool needTracking = true, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Gets a role with its permissions included.
     /// </summary>
     Task<Role?> GetWithPermissionsAsync(long id, bool needTracking = true, CancellationToken cancellationToken = default);
@@ -37,8 +32,4 @@ public interface IRoleRepo : IRepositoryHasPagingQuery<Role, long>
     /// </summary>
     Task<IReadOnlyList<Role>> GetByIdsWithPermissionsAsync(IEnumerable<long> roleIds, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Checks if a role code already exists.
-    /// </summary>
-    Task<bool> ExistsByCodeAsync(string code, CancellationToken cancellationToken = default);
 }

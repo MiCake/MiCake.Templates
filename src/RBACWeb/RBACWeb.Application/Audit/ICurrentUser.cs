@@ -20,11 +20,6 @@ public interface ICurrentUser
     IEnumerable<long> GetRoleIds();
 
     /// <summary>
-    /// Gets the current user's roles (from cache).
-    /// </summary>
-    Task<IEnumerable<string>> GetRolesAsync();
-
-    /// <summary>
     /// Gets the current user's permission codes (from cache).
     /// </summary>
     Task<IEnumerable<string>> GetPermissionsAsync();
@@ -33,11 +28,6 @@ public interface ICurrentUser
     /// Checks if the current user has a specific permission (from cache).
     /// </summary>
     Task<bool> HasPermissionAsync(string permissionCode);
-
-    /// <summary>
-    /// Checks if the current user has a specific role (from cache).
-    /// </summary>
-    Task<bool> IsInRoleAsync(string roleCode);
 
     /// <summary>
     /// Gets the current user's data scope filter (from cache).
@@ -84,16 +74,6 @@ internal class CurrentUser : ICurrentUser
             .Where(id => id > 0);
     }
 
-    public async Task<IEnumerable<string>> GetRolesAsync()
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null)
-            return [];
-
-        var roles = await _permissionChecker.GetUserRolesAsync(userId.Value);
-        return roles.Select(r => r.Code);
-    }
-
     public async Task<IEnumerable<string>> GetPermissionsAsync()
     {
         var userId = GetCurrentUserId();
@@ -110,15 +90,6 @@ internal class CurrentUser : ICurrentUser
             return false;
 
         return await _permissionChecker.HasPermissionAsync(userId.Value, permissionCode);
-    }
-
-    public async Task<bool> IsInRoleAsync(string roleCode)
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null)
-            return false;
-
-        return await _permissionChecker.IsInRoleAsync(userId.Value, roleCode);
     }
 
     public async Task<DataScopeFilter?> GetDataScopeAsync()

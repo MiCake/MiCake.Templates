@@ -60,13 +60,11 @@ public class UserRoleService
         if (user is null)
             return OperationResult<UserPermissionsDto>.Failure("User not found", AuthErrorCodes.UserNotFound);
 
-        var roles = await _permissionChecker.GetUserRolesAsync(userId, cancellationToken);
         var permissionCodes = await _permissionChecker.GetUserPermissionCodesAsync(userId, cancellationToken);
 
         var dto = new UserPermissionsDto
         {
             UserId = userId,
-            RoleCodes = roles.Select(r => r.Code).ToList(),
             PermissionCodes = permissionCodes.ToList()
         };
 

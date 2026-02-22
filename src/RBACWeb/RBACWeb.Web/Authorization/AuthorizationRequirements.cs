@@ -15,15 +15,3 @@ public class PermissionRequirement : IAuthorizationRequirement
     }
 }
 
-/// <summary>
-/// Requirement for role-based authorization.
-/// </summary>
-public class RoleRequirement : IAuthorizationRequirement
-{
-    public string RoleCode { get; }
-
-    public RoleRequirement(string roleCode)
-    {
-        RoleCode = roleCode;
-    }
-}

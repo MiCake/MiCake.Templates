@@ -9,13 +9,6 @@ namespace RBACWeb.Domain.Models.Authorization;
 public class Role : AuditAggregateRoot
 {
     /// <summary>
-    /// Unique role code (e.g., "ADMIN", "USER", "REGIONAL_MANAGER").
-    /// </summary>
-    [Required]
-    [MaxLength(50)]
-    public string Code { get; private set; } = null!;
-
-    /// <summary>
     /// Display name of the role.
     /// </summary>
     [Required]
@@ -60,20 +53,15 @@ public class Role : AuditAggregateRoot
     /// Creates a new role.
     /// </summary>
     public static Role Create(
-        string code,
         string name,
         string? description = null,
         bool isSystem = false)
     {
-        if (string.IsNullOrWhiteSpace(code))
-            throw new ArgumentException("Role code cannot be empty", nameof(code));
-
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Role name cannot be empty", nameof(name));
 
         return new Role
         {
-            Code = code.ToUpperInvariant(),
             Name = name,
             Description = description,
             IsSystem = isSystem,
