@@ -291,7 +291,7 @@ public class User : AuditAggregateRoot
         if (string.IsNullOrWhiteSpace(userToken.Value))
             throw new ArgumentException("Token value cannot be empty");
 
-        var existing = _userTokens.FirstOrDefault(t => t.Type == userToken.Type && !t.HasExpired());
+        var existing = _userTokens.FirstOrDefault(t => t.Type == userToken.Type);
 
         if (existing is not null)
         {
