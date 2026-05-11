@@ -15,6 +15,7 @@ A collection of production-ready project templates based on the [MiCake framewor
 | Template Name          | Description                                            |
 | ---------------------- | ------------------------------------------------------ |
 | MiCake WebAPI Template | Standard ASP.NET Core Web API template based on MiCake |
+| MiCake WebAPI Template with RBAC | ASP.NET Core Web API template with built-in RBAC modules based on MiCake |
 
 ## 🚀 Quick Start
 
@@ -24,9 +25,13 @@ A collection of production-ready project templates based on the [MiCake framewor
    ```
 
 2. **Create a new project**
-   Taking the MiCake WebAPI template as an example:
+   Choose one template based on your scenario:
    ```powershell
+   # Standard WebAPI template
    dotnet new micake-webapi -n YourProjectName
+
+   # WebAPI template with RBAC
+   dotnet new micake-webapi-rbac -n YourProjectName
    ```
 
 3. **Enter the project directory and run**

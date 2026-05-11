@@ -18,7 +18,11 @@ public static class WebServiceRegistration
         services.AddControllers();
 
         services.AddOpenApi();
-        services.AddAutoMapper(typeof(WebModule).Assembly, typeof(ApplicationModule).Assembly);
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddMaps(typeof(WebModule).Assembly);
+            cfg.AddMaps(typeof(ApplicationModule).Assembly);
+        });
         services.AddValidatorsFromAssembly(typeof(WebModule).Assembly);
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();

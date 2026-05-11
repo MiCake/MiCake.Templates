@@ -14,6 +14,7 @@
 | 模板名称               | 描述                                         |
 | ---------------------- | -------------------------------------------- |
 | MiCake WebAPI Template | 基于 MiCake 的标准 ASP.NET Core Web API 模板 |
+| MiCake WebAPI Template with RBAC | 基于 MiCake 的内置 RBAC 模块 ASP.NET Core Web API 模板 |
 
 ## 🚀 快速开始
 
@@ -23,9 +24,13 @@ dotnet new install MiCake.Templates
 ```
 
 2. **创建新项目**
-以 MiCake WebAPI 模板为例：
+根据场景选择一个模板：
 ```powershell
+# 标准 WebAPI 模板
 dotnet new micake-webapi -n YourProjectName
+
+# 内置 RBAC 的 WebAPI 模板
+dotnet new micake-webapi-rbac -n YourProjectName
 ```
 
 3. **进入项目目录并运行**
