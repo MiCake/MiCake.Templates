@@ -5,11 +5,12 @@ using StandardWeb.Domain.Enums.Identity;
 
 namespace StandardWeb.Domain.Models.Identity;
 
-public class UserLoginHistory : AuditAggregateRoot
+/// <summary>
+/// Login history entity - part of User aggregate.
+/// Tracks user login attempts, successes, and failures.
+/// </summary>
+public class UserLoginHistory : AuditEntity
 {
-    [Required]
-    public DateTime RecordedAt { get; private set; }
-
     [Required]
     public UserLoginActionType ActionType { get; private set; }
 
@@ -37,7 +38,6 @@ public class UserLoginHistory : AuditAggregateRoot
     public User User { get; private set; } = null!;
     #endregion
 
-    // Required by EF Core
     protected UserLoginHistory() { }
 
     public static UserLoginHistory CreateSuccessfulLogin(
@@ -57,7 +57,6 @@ public class UserLoginHistory : AuditAggregateRoot
         return new UserLoginHistory
         {
             UserId = userId,
-            RecordedAt = TimeNow.Now,
             ActionType = action,
             IpAddress = ipAddress,
             UserAgent = userAgent,
@@ -85,7 +84,6 @@ public class UserLoginHistory : AuditAggregateRoot
         return new UserLoginHistory
         {
             UserId = userId,
-            RecordedAt = TimeNow.Now,
             ActionType = action,
             IpAddress = ipAddress,
             UserAgent = userAgent,

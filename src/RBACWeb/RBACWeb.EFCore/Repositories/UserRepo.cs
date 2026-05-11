@@ -1,0 +1,77 @@
+using MiCake.EntityFrameworkCore.Repository;
+using Microsoft.EntityFrameworkCore;
+using RBACWeb.Domain.Enums.Identity;
+using RBACWeb.Domain.Models.Identity;
+using RBACWeb.Domain.Repositories;
+
+namespace RBACWeb.EFCore.Repositories;
+
+public class UserRepo : BasePagingRepository<User>, IUserRepo
+{
+    public UserRepo(EFRepositoryDependencies<AppDbContext> dependencies) : base(dependencies)
+    {
+    }
+
+    public async Task<User?> FindByContactAsync(string phoneOrEmail, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        // Try to find by either phone number or email
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => 
+                (u.Contact.PhoneNumber != null && u.Contact.PhoneNumber == phoneOrEmail) ||
+                (u.Contact.Email != null && u.Contact.Email == phoneOrEmail), 
+                cancellationToken);
+    }
+
+    public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => u.Contact.PhoneNumber == phoneNumber, cancellationToken);
+    }
+
+    public async Task<User?> GetByEmailAsync(string email, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return await GetDbSet(needTracking)
+            .FirstOrDefaultAsync(u => u.Contact.Email == email, cancellationToken);
+    }
+
+    public async Task<User?> FindByExternalLoginAsync(LoginProviderType providerType, string providerKey, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return await GetDbSet(needTracking).Include(s => s.ExternalLogins)
+        .Where(u => u.ExternalLogins.Any(e => e.ProviderType == providerType && e.ProviderKey == providerKey && !e.IsUnbound))
+        .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<User?> FindByProviderUnionIdAsync(string providerUnionId, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return await GetDbSet(needTracking).Include(s => s.ExternalLogins)
+            .Where(u => u.ExternalLogins.Any(e => e.ProviderUnionId == providerUnionId && !e.IsUnbound))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetByPhoneNumberWithIncludesAsync(string phoneNumber, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        var query = GetDbSet(needTracking);
+        if (include != null)
+        {
+            query = include(query);
+        }
+        return await query.FirstOrDefaultAsync(u => u.Contact.PhoneNumber == phoneNumber, cancellationToken);
+    }
+
+    public async Task<User?> GetByIdWithIncludesAsync(long id, Func<IQueryable<User>, IQueryable<User>>? include = null, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        var query = GetDbSet(needTracking);
+        if (include != null)
+        {
+            query = include(query);
+        }
+        return await query.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+    }
+
+    public Task<User?> FindByUserTokenAsync(UserTokenType tokenType, string tokenValue, bool needTracking = true, CancellationToken cancellationToken = default)
+    {
+        return GetDbSet(needTracking).Include(s => s.UserTokens)
+                    .Where(u => u.UserTokens.Any(t => t.Type == tokenType && t.Value == tokenValue))
+                    .FirstOrDefaultAsync(cancellationToken);
+    }
+}

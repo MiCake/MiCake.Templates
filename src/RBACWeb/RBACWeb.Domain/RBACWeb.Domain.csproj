@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MiCake" Version="10.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\RBACWeb.Common\RBACWeb.Common.csproj" />
+  </ItemGroup>
+</Project>

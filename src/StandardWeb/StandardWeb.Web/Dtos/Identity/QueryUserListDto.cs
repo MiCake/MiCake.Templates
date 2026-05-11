@@ -1,11 +1,10 @@
-using MiCake.Util.Query.Dynamic;
 using StandardWeb.Domain.Enums.Identity;
 
 namespace StandardWeb.Web.Dtos.Identity;
 
 // A example to show how to use dynamic query object and paging filter
 [DynamicFilterJoin(JoinType = FilterJoinType.And)]
-public class QueryUserListDto : IDynamicQueryObj
+public class QueryUserListDto : IDynamicQueryModel
 {
     [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
     public string? PhoneNumber { get; set; }

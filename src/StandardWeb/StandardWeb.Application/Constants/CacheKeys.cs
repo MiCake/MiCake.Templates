@@ -5,9 +5,18 @@ namespace StandardWeb.Application.Cache;
 /// </summary>
 public static class CacheKeys
 {
+    // ==================== Configuration Module ====================
 
-    // Example cache keys
-    // public const string UserById = "User:ById:{0}";
+    /// <summary>
+    /// Cache key for individual AppSetting: "AppSetting:{SettingGroup}:{Key}"
+    /// Example: AppSetting:Email:SmtpServer
+    /// </summary>
+    public const string AppSettingByKey = "AppSetting:{0}:{1}";
+
+    // ==================== Other Modules ====================
+
+    // Example cache keys: 
+    // public const string UserById = "User:{0}";
 
     /// <summary>
     /// returns a timestamped cache key

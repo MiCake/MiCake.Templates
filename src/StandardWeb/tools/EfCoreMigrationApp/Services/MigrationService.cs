@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using StandardWeb.Domain;
+using StandardWeb.EFCore;
 
 namespace EfCoreMigrationApp.Services;
 

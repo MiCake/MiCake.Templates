@@ -325,7 +325,7 @@ public static class JsonHelper
             foreach (var item in jsonArray.EnumerateArray())
             {
                 var obj = JsonSerializer.Deserialize<T>(item.GetRawText(), options);
-                if (obj != null)
+                if (obj is not null)
                 {
                     result.Add(obj);
                 }
@@ -345,7 +345,7 @@ public static class JsonHelper
     /// <summary>
     /// Custom DateTime converter supporting "yyyy-MM-dd HH:mm:ss" and standard formats.
     /// </summary>
-    private class CustomDateTimeConverter : JsonConverter<DateTime>
+    private sealed class CustomDateTimeConverter : JsonConverter<DateTime>
     {
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -369,7 +369,7 @@ public static class JsonHelper
     /// <summary>
     /// Custom nullable DateTime converter with same format support as CustomDateTimeConverter.
     /// </summary>
-    private class CustomNullableDateTimeConverter : JsonConverter<DateTime?>
+    private sealed class CustomNullableDateTimeConverter : JsonConverter<DateTime?>
     {
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

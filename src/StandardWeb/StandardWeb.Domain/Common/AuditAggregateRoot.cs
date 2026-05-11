@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using MiCake.Audit;
-using MiCake.DDD.Domain;
 
 namespace StandardWeb.Domain.Common;
 
@@ -9,27 +8,27 @@ namespace StandardWeb.Domain.Common;
 /// Automatically tracks creation and modification times and actors.
 /// Inherits from MiCake AggregateRoot with long ID type.
 /// </summary>
-public class AuditAggregateRoot : AggregateRoot<long>, IHasCreationTime, IHasModificationTime
+public class AuditAggregateRoot : AggregateRoot<long>, IHasAuditTimestamps<DateTimeOffset>, IHasCreatedBy, IHasModifiedBy
 {
     /// <summary>
     /// Identifier of the user or system that created this entity.
     /// </summary>
     [MaxLength(50)]
-    public string CreatedBy { get; set; } = string.Empty;
+    public long? CreatedBy { get; set; }
 
     /// <summary>
     /// Timestamp when this entity was created.
     /// </summary>
-    public DateTime CreationTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// Identifier of the user or system that last modified this entity.
     /// </summary>
     [MaxLength(50)]
-    public string? ModifiedBy { get; set; }
+    public long? ModifiedBy { get; set; }
 
     /// <summary>
     /// Timestamp of the last modification to this entity.
     /// </summary>
-    public DateTime? ModificationTime { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

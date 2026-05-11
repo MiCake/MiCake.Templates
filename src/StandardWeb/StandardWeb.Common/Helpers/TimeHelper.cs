@@ -13,7 +13,7 @@ public static class TimeHelper
     /// <returns>Unix timestamp as string</returns>
     public static string GetUnixTimeStamp(DateTime dateTime, UnixTimeStampType type = UnixTimeStampType.Seconds)
     {
-        var unixTime = (dateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+        var unixTime = (dateTime - DateTime.UnixEpoch).TotalSeconds;
         return type == UnixTimeStampType.Milliseconds ? (unixTime * 1000).ToString() : unixTime.ToString();
     }
 

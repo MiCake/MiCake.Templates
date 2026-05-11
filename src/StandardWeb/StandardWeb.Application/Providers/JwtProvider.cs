@@ -14,7 +14,7 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
 
     public JwtTokenModel GenerateToken(User user, List<Claim> claims)
     {
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
 
         var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -23,8 +23,19 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtClaimTypes.UserId, user.Id.ToString()),
-            new(JwtClaimTypes.PhoneNumber, user.PhoneNumber),
         };
+
+        // Add phone number claim if available
+        if (user.Contact.HasPhoneNumber)
+        {
+            finalClaims.Add(new Claim(JwtClaimTypes.PhoneNumber, user.Contact.PhoneNumber!));
+        }
+
+        // Add email claim if available
+        if (user.Contact.HasEmail)
+        {
+            finalClaims.Add(new Claim(ClaimTypes.Email, user.Contact.Email!));
+        }
 
         if (claims != null && claims.Count > 0)
         {
@@ -34,7 +45,7 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(finalClaims),
-            Expires = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes),
+            Expires = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes).UtcDateTime,
             Issuer = _jwtConfig.Issuer,
             Audience = _jwtConfig.Audience,
             SigningCredentials = credentials
@@ -49,9 +60,9 @@ public class JwtProvider(IOptions<JwtConfigOptions> jwtConfig)
         return new JwtTokenModel
         {
             JwtToken = jwtToken,
-            Expiration = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes),
+            Expiration = TimeNow.Now.AddMinutes(_jwtConfig.ExpirationMinutes).UtcDateTime,
             RefreshToken = refreshToken,
-            RefreshTokenExpiration = TimeNow.Now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes)
+            RefreshTokenExpiration = TimeNow.Now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes).UtcDateTime
         };
     }
 

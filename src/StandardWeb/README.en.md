@@ -1,26 +1,30 @@
 # StandardWeb Template Description
 
+[中文](README.zh-CN.md) | **English**
+
 StandardWeb is a ready-to-use ASP.NET Core 10.0 + DDD template built on the MiCake framework. It encapsulates common web service components (authentication, logging, EF Core, mapping, etc.) in layers for easy startup and enterprise expansion.
 
 ## Architecture Overview
-The template adopts a clear layered design (using MiCake modular support, with layer dependency direction: Web → Application → Domain → Common/Contracts):
+The template adopts a clear layered design (using MiCake modular support, with layer dependency direction: Web → Application → EFCore → Domain → Common/Contracts):
 
 | Layer | Project | Main Responsibilities |
 | --- | --- | --- |
 | Web Host | `StandardWeb.Web` | Application startup and hosting: Program.cs, Controller, API Host configuration, OpenAPI/Swagger, authentication and middleware registration |
 | Application | `StandardWeb.Application` | Application use-cases/business orchestration: Services (Use-cases), Providers (e.g., JwtProvider), DTO mapping (AutoMapper configuration) |
-| Domain | `StandardWeb.Domain` | Domain models, aggregates, repository interfaces and implementations, EF Core DbContext and migrations |
+| Infrastructure (EF Core) | `StandardWeb.EFCore` | Data access implementation: EF Core DbContext, repository implementations |
+| Domain | `StandardWeb.Domain` | Domain models, aggregates, repository interfaces (technology-agnostic domain layer) |
 | Common | `StandardWeb.Common` | Cross-layer infrastructure: Utility classes (encryption, time, etc.), shared contracts/types, authentication/Token helpers, cache/HttpClient encapsulation |
 | Contracts | `StandardWeb.Contracts` | External DTOs (public data contracts), for sharing between layers (or other services) |
 
-Dependencies flow from top to bottom (Web → Application → Domain), with common tools located in `StandardWeb.Common` for easy sharing across modules.
+Dependencies flow from top to bottom (Web → Application → EFCore → Domain), with the Domain layer kept technology-agnostic. The `StandardWeb.EFCore` layer handles all database-specific implementations, while `StandardWeb.Domain` contains pure domain logic and repository interfaces.
 
 ## Directory Structure (Simplified View)
 ```
 src/StandardWeb
 ├── StandardWeb.Common/       # Cross-layer infrastructure: Encryption/decryption, time, Result, Token helpers, etc.
 ├── StandardWeb.Contracts/    # Shared DTOs/Contracts (connecting with Application, Web)
-├── StandardWeb.Domain/       # Domain models, repository interfaces and implementations, AppDbContext
+├── StandardWeb.Domain/       # Domain models, aggregates, repository interfaces (pure domain, no infrastructure)
+├── StandardWeb.EFCore/       # Infrastructure layer: AppDbContext, repository implementations, EF Core configurations
 ├── StandardWeb.Application/  # Business services, Providers, AutoMapper Profiles
 ├── StandardWeb.Web/          # Startup host: Program.cs, controllers, OpenAPI, Startup extensions
 ├── tests/                    # Test projects
@@ -35,20 +39,13 @@ src/StandardWeb
 ## Quick Start (3 Minutes to Get Started)
 Below are the minimal steps to experience the template. The template defaults to PostgreSQL (Npgsql), with DbContext registered via AddNpgsql in `Program.cs`.
 
-1) Clone and switch to the template directory
+1) Build the solution
 
 ```powershell
-cd src/StandardWeb
-dotnet restore
+dotnet build
 ```
 
-2) Build the solution
-
-```powershell
-dotnet build StandardWeb.sln
-```
-
-3) Configure (development environment)
+2) Configure (development environment)
 
 - Set in `StandardWeb.Web/appsettings.Development.json` or environment variables:
     - `ConnectionStrings:DefaultConnection` → PostgreSQL connection string
@@ -56,7 +53,7 @@ dotnet build StandardWeb.sln
     - `AllowedOrigins` → For CORS, comma-separated, supports `https://*.example.com` wildcards
 - Configure database connection string in `tools\EfCoreMigrationApp\appsettings.json` for database generation and migration
 
-4) Apply EF Core migrations and initialize database
+3) Apply EF Core migrations and initialize database
 
 ```powershell
 cd tools\EfCoreMigrationApp
@@ -64,11 +61,11 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-5) Run the project
+4) Run the project
 
 - Start the `StandardWeb.Web` project
 
-6) View running results (during development)
+5) View running results (during development)
 
 In development mode, OpenAPI/Scalar documentation is enabled by default (controlled in Program.cs); after running `StandardWeb.Web`, it will default to `http://localhost:<port>/scalar/v1` to view interfaces and reference documentation.
 
@@ -135,14 +132,14 @@ public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto d
 ### Providers in Application Layer
 The Providers path is used for placing services with single responsibilities or interacting with external systems, such as sending emails, generating JWT tokens, Azure clients, etc. Services in the Application layer coordinate these Providers to complete a complete business logic.
 
-## Adding a New Feature Module (Recommended Process)
-1. Define entities, aggregates, and repository interfaces in `StandardWeb.Domain`;
-2. Add repository implementation in `StandardWeb.Domain`, and register/configure EF Core entities in `AppDbContext`;
-3. Implement business logic (use-cases) in `StandardWeb.Application/Services/<Feature>/`, and write AutoMapper Profiles in Application layer;
+## Adding a New Business Module (Recommended Process)
+1. Define entities, aggregates, and repository interfaces in `StandardWeb.Domain` (keep it technology-agnostic);
+2. Add repository implementations in `StandardWeb.EFCore/Repositories/`, and configure EF Core entity mappings in `AppDbContext`;
+3. Implement business logic (use-cases) in `StandardWeb.Application/Services/<ModuleName>/`, and write AutoMapper Profiles in Application layer;
 4. Define error codes in `StandardWeb.Application\ErrorCodes` (if needed);
 5. Define cross-service shared DTOs and interfaces in `StandardWeb.Contracts` (if needed);
 6. Define module codes in `StandardWeb.Web\Constants\ModuleCodes.cs`;
-7. Write API controllers and corresponding DTOs/Validators in `StandardWeb.Web/Controllers/<Feature>`;
+7. Write API controllers and corresponding DTOs/Validators in `StandardWeb.Web/Controllers/<ModuleName>`;
 8. Test and add migrations (if introducing new entities, run `dotnet ef migrations add` and update database in `tools\EfCoreMigrationApp`).
 
 **Example Controller**
@@ -180,12 +177,12 @@ public class InventoryController : BaseApiController
 MiCake provides many very practical features that can maximize avoiding reinventing the wheel and improve development efficiency. It is recommended to directly use MiCake's provided features to implement common requirements.
 
 #### Pagination and Dynamic Queries
-Pagination queries are often used in modern web projects. When the repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination query functionality. You can directly use `PagingQueryAsync` and `CommonFilterPagingQueryAsync` to implement pagination and dynamic queries:
-When a DTO object implements the `IDynamicQueryObj` interface, you can directly use the `GenerateFilterGroup` method to generate dynamic query conditions. For example:
+Pagination queries are often used in modern web projects. When the repository interface inherits from `IRepositoryHasPagingQuery`, it provides pagination query functionality. You can directly use `FilterQueryAsync` and `FilterPagingQueryAsync` to implement pagination and dynamic queries:
+When a DTO object implements the `IDynamicQueryModel` interface, you can directly use the `GenerateFilterGroup` method to generate dynamic query conditions. For example:
 
 ```csharp
 [DynamicFilterJoin(JoinType = FilterJoinType.And)]
-public class QueryUserListDto : IDynamicQueryObj
+public class QueryUserListDto : IDynamicQueryModel
 {
     [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
     public string? PhoneNumber { get; set; }
@@ -196,7 +193,7 @@ public class QueryUserListDto : IDynamicQueryObj
 
 // QueryUserListDto generates the corresponding dynamic query conditions: PhoneNumber.StartsWith(value) AND Status == UserStatus.Active, handed over to EFCore for processing
 
-var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+var pagedUsers = await _userRepo.FilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
 ```
 
-Usually, simple conditional filtering can be implemented using the `IDynamicQueryObj` method. If there are more complex query conditions, you can choose to manually build `FilterGroup` or `CompositeFilterGroup` objects to implement dynamic query condition construction. For details, refer to the MiCake documentation.
+Usually, simple conditional filtering can be implemented using the `IDynamicQueryModel` method. If there are more complex query conditions, you can choose to manually build `FilterGroup` or `CompositeFilterGroup` objects to implement dynamic query condition construction. For details, refer to the MiCake documentation.

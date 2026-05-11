@@ -4,13 +4,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MiCake.AspNetCore" Version="10.0.0-preview.5" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="MiCake.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StandardWeb.Contracts\StandardWeb.Contracts.csproj" />
-    <ProjectReference Include="..\StandardWeb.Domain\StandardWeb.Domain.csproj" />
+    <ProjectReference Include="..\StandardWeb.EFCore\StandardWeb.EFCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Audit\" />
   </ItemGroup>
 
 </Project>

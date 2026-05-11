@@ -1,19 +1,18 @@
 using System.ComponentModel.DataAnnotations;
 using MiCake.Audit;
-using MiCake.DDD.Domain;
 
 namespace StandardWeb.Domain.Common;
 
-public class AuditEntity : Entity<long>, IHasCreationTime, IHasModificationTime
+public class AuditEntity : Entity<long>, IHasAuditTimestamps<DateTimeOffset>, IHasCreatedBy, IHasModifiedBy
 {
     [MaxLength(50)]
-    public string CreatedBy { get; set; } = string.Empty;
+    public long? CreatedBy { get; set; }
 
-    public DateTime CreationTime { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     [MaxLength(50)]
-    public string? ModifiedBy { get; set; }
+    public long? ModifiedBy { get; set; }
 
-    public DateTime? ModificationTime { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
 }

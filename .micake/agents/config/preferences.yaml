@@ -1,0 +1,182 @@
+# =============================================================================
+# MiCake Agent - User Preferences
+# =============================================================================
+# Agents will load these settings before starting work.
+# Customize these values to match your project requirements.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Language Settings
+# -----------------------------------------------------------------------------
+language:
+  # Agent communication language: zh-CN | en-US | ja-JP
+  communication: "en-US"
+  
+  # Code comments language: zh-CN | en-US
+  code_comments: "en-US"
+  
+  # Documentation output language: zh-CN | en-US
+  documentation: "en-US"
+
+# -----------------------------------------------------------------------------
+# DDD Design Preferences
+# -----------------------------------------------------------------------------
+ddd:
+  # Prefer using domain events for decoupling
+  # true: Encourage domain events for cross-aggregate communication
+  # false: Prefer direct method calls
+  prefer_domain_events: true
+  
+  # Use static factory methods for domain object creation
+  # true: Use Order.Create(...) factory methods
+  # false: Use new Order(...) constructors
+  use_static_factory_methods: true
+  
+  # Domain event naming style: past-tense | present-tense
+  # past-tense: OrderCreatedEvent, OrderShippedEvent
+  # present-tense: OrderCreateEvent, OrderShipEvent
+  domain_event_naming: "past-tense"
+  
+  # Default aggregate ID type: long | Guid | int | string
+  aggregate_id_type: "long"
+
+# -----------------------------------------------------------------------------
+# Code Style Settings
+# -----------------------------------------------------------------------------
+code_style:
+  # Generate XML documentation comments
+  generate_xml_docs: true
+  
+  # Use file-scoped namespaces (C# 10+)
+  file_scoped_namespaces: true
+  
+  # Use primary constructors (C# 12+)
+  use_primary_constructors: false
+  
+  # Nullable reference types enabled
+  nullable_enabled: true
+
+# -----------------------------------------------------------------------------
+# Output Settings
+# -----------------------------------------------------------------------------
+output:
+  # Default output folder for generated files
+  folder: ".micake-output"
+  
+  # Show verbose logging during output
+  verbose: false
+  
+  # Generate changelog for modifications
+  generate_changelog: true
+
+# -----------------------------------------------------------------------------
+# Requirements Document Configuration
+# -----------------------------------------------------------------------------
+requirements:
+  # Directory for requirement documents
+  folder: ".micake/requirements"
+  
+  # Supported document formats
+  supported_formats:
+    - "*.md"
+    - "*.txt"
+    - "*.json"
+    - "*.yaml"
+  
+  # Keywords for automatic parsing
+  auto_parse_keywords:
+    - "User Story"
+    - "PRD"
+    - "Requirements"
+    - "Epic"
+    - "Feature"
+
+# -----------------------------------------------------------------------------
+# Agent Behavior Settings
+# -----------------------------------------------------------------------------
+agent:
+  # Confirm with user before generating code
+  confirm_before_generate: true
+  
+  # Show design suggestions and recommendations
+  show_design_suggestions: true
+  
+  # Automatically run code review after generation
+  auto_review: true
+  
+  # Output verbosity: minimal | standard | detailed
+  verbosity: "standard"
+
+# -----------------------------------------------------------------------------
+# Custom Practices Configuration
+# -----------------------------------------------------------------------------
+# Specify your own design practices or project specifications.
+# These will be merged with the built-in knowledge base.
+# When conflicts occur, your custom content takes priority.
+# -----------------------------------------------------------------------------
+custom_practices:
+  # Path to your custom design practices or project specifications file
+  # Supports Markdown (.md) or YAML (.yaml/.yml) formats
+  # Leave empty or comment out to use only built-in knowledge
+  # file_path: ".micake/my-project-standards.md"
+  file_path: ""
+  
+  # How to handle conflicts between custom and built-in content
+  # override: Custom content completely replaces conflicting built-in content
+  # merge: Attempt to combine both (custom content takes priority for direct conflicts)
+  conflict_resolution: "override"
+  
+  # Sections in your custom file that should override built-in knowledge
+  # Use this to specify which areas your custom file covers
+  # Options: ddd-patterns, repository-patterns, module-system, code-style, naming-conventions, all
+  override_sections:
+    - "all"
+
+# -----------------------------------------------------------------------------
+# Change Management Settings
+# -----------------------------------------------------------------------------
+change_management:
+  # Enable conflict detection for concurrent changes
+  conflict_detection: true
+  
+  # Create Git branch before implementing changes
+  create_git_branch: true
+  
+  # Branch naming pattern ({change_id} will be replaced)
+  branch_naming: "change/{change_id}"
+  
+  # Require user confirmation after each task
+  confirm_each_task: false
+  
+  # Auto-archive completed changes
+  auto_archive: true
+  
+  # Prompt to cleanup history after change completion
+  prompt_cleanup_on_complete: true
+  
+  # Maximum concurrent changes (0 = unlimited)
+  max_concurrent_changes: 1
+  
+  # Auto-cleanup history older than N days (0 = never auto-cleanup)
+  auto_cleanup_days: 0
+
+# -----------------------------------------------------------------------------
+# Context Sync Settings
+# -----------------------------------------------------------------------------
+context_sync:
+  # Auto-sync on workflow start
+  auto_sync_on_start: true
+  
+  # Directories to exclude from scanning
+  exclude_dirs:
+    - "bin"
+    - "obj"
+    - "node_modules"
+    - ".git"
+    - "packages"
+  
+  # File extensions to include
+  include_extensions:
+    - ".cs"
+    - ".csproj"
+    - ".sln"

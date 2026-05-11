@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using StandardWeb.Common.Time;
 using StandardWeb.Domain.Enums.Identity;
 
@@ -50,31 +49,14 @@ public class ExternalLoginProvider : AuditEntity
     public string? ExtendedData { get; private set; }
 
     /// <summary>
-    /// Access token (optional, for subsequent API calls)
-    /// </summary>
-    [MaxLength(1000)]
-    public string? AccessToken { get; private set; }
-
-    /// <summary>
-    /// Refresh token (optional)
-    /// </summary>
-    [MaxLength(1000)]
-    public string? RefreshToken { get; private set; }
-
-    /// <summary>
-    /// Token expiration time (optional)
-    /// </summary>
-    public DateTime? TokenExpiresAt { get; private set; }
-
-    /// <summary>
     /// First bind time
     /// </summary>
-    public DateTime BindTime { get; private set; }
+    public DateTimeOffset BindTime { get; private set; }
 
     /// <summary>
     /// Last login time
     /// </summary>
-    public DateTime? LastLoginTime { get; private set; }
+    public DateTimeOffset? LastLoginTime { get; private set; }
 
     /// <summary>
     /// Whether the account is unbound
@@ -84,13 +66,13 @@ public class ExternalLoginProvider : AuditEntity
     /// <summary>
     /// Unbind time
     /// </summary>
-    public DateTime? UnboundTime { get; private set; }
+    public DateTimeOffset? UnboundTime { get; private set; }
 
 
     #region Navigation Properties
 
     public User User { get; private set; } = null!;
-    
+
     #endregion
 
     protected ExternalLoginProvider() { }
@@ -113,7 +95,6 @@ public class ExternalLoginProvider : AuditEntity
             ProviderUnionId = providerUnionId,
             NickName = nickName,
             AvatarUrl = avatarUrl,
-            AccessToken = accessToken,
             BindTime = TimeNow.Now,
             IsUnbound = false
         };
@@ -134,16 +115,6 @@ public class ExternalLoginProvider : AuditEntity
     }
 
     /// <summary>
-    /// Update access tokens
-    /// </summary>
-    public void UpdateTokens(string? accessToken, string? refreshToken = null, DateTime? expiresAt = null)
-    {
-        AccessToken = accessToken;
-        RefreshToken = refreshToken;
-        TokenExpiresAt = expiresAt;
-    }
-
-    /// <summary>
     /// Record login activity
     /// </summary>
     public void RecordLogin()
@@ -161,11 +132,6 @@ public class ExternalLoginProvider : AuditEntity
 
         IsUnbound = true;
         UnboundTime = TimeNow.Now;
-
-        // Clear sensitive information
-        AccessToken = null;
-        RefreshToken = null;
-        TokenExpiresAt = null;
     }
 
     /// <summary>

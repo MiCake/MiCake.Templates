@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardWeb.Web.Tests", "te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardWeb.Web.IntegrationTests", "tests\StandardWeb.Web.IntegrationTests\StandardWeb.Web.IntegrationTests.csproj", "{240AB1E3-7FC0-414B-906C-956B61DAB528}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardWeb.EFCore", "StandardWeb.EFCore\StandardWeb.EFCore.csproj", "{A33658C5-1262-4A5C-A36C-B941D4E09C4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,6 +159,18 @@ Global
 		{240AB1E3-7FC0-414B-906C-956B61DAB528}.Release|x64.Build.0 = Release|Any CPU
 		{240AB1E3-7FC0-414B-906C-956B61DAB528}.Release|x86.ActiveCfg = Release|Any CPU
 		{240AB1E3-7FC0-414B-906C-956B61DAB528}.Release|x86.Build.0 = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|x64.Build.0 = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Debug|x86.Build.0 = Debug|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|x64.ActiveCfg = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|x64.Build.0 = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A33658C5-1262-4A5C-A36C-B941D4E09C4E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

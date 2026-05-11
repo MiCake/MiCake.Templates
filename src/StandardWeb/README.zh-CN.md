@@ -1,26 +1,30 @@
 # StandardWeb 模板说明
 
+**中文** | [English](README.en.md)
+
 StandardWeb 是基于 MiCake 框架构建的一个开箱即用的 ASP.NET Core 10.0 + DDD 模板。它把常见的 Web 服务组成部分（认证、日志、EF Core、映射等）分层封装，便于快速上手并在企业场景中扩展。
 
 ## 架构概览
-模板采用清晰的分层设计（并使用 MiCake 模块化支持，各层依赖方向为 Web → Application → Domain → Common/Contracts）：
+模板采用清晰的分层设计（并使用 MiCake 模块化支持，各层依赖方向为 Web → Application → EFCore → Domain → Common/Contracts）：
 
 | 层级 | 项目 | 主要职责 |
 | --- | --- | --- |
 | Web Host | `StandardWeb.Web` | 应用启动与宿主：Program.cs、Controller、API Host 配置、OpenAPI/Swagger、认证与中间件注册 |
 | Application | `StandardWeb.Application` | 应用用例/业务编排：服务（Use-cases）、Providers（如 JwtProvider）、DTO 映射（AutoMapper 配置） |
-| Domain | `StandardWeb.Domain` | 领域模型、聚合根、仓储接口与实现、EF Core DbContext 与迁移 |
+| Infrastructure（基础设施层） | `StandardWeb.EFCore` | 数据访问实现：EF Core DbContext、仓储实现 |
+| Domain | `StandardWeb.Domain` | 领域模型、聚合根、仓储接口（纯领域层，技术无关） |
 | Common | `StandardWeb.Common` | 跨层基础设施：工具类（加密、时间等）、共享 contract/类型、认证/Token 辅助、缓存/HttpClient 封装 |
 | Contracts | `StandardWeb.Contracts` | 对外 DTO（公共数据契约），供不同层之间（或其他服务）共享使用 |
 
-依赖自上而下流动（Web → Application → Domain），公共工具位于 `StandardWeb.Common`，方便被多个模块共享。
+依赖自上而下流动（Web → Application → EFCore → Domain），领域层保持技术无关性。`StandardWeb.EFCore` 层处理所有数据库相关的实现，而 `StandardWeb.Domain` 包含纯粹的领域逻辑和仓储接口。
 
 ## 目录结构（精简视图）
 ```
 src/StandardWeb
 ├── StandardWeb.Common/       # 跨层基础设施：加解密、时间、Result、Token 辅助等
 ├── StandardWeb.Contracts/    # 共享 DTO/Contracts（与 Application、Web 对接）
-├── StandardWeb.Domain/       # 领域模型、仓储接口与实现、AppDbContext
+├── StandardWeb.Domain/       # 领域模型、聚合根、仓储接口（纯领域，无基础设施）
+├── StandardWeb.EFCore/       # 基础设施层：AppDbContext、仓储实现、EF Core 配置
 ├── StandardWeb.Application/  # 业务服务、Provider、AutoMapper Profile
 ├── StandardWeb.Web/          # 启动宿主：Program.cs、控制器、OpenAPI、Startup 扩展
 ├── tests/                    # 测试项目
@@ -35,20 +39,13 @@ src/StandardWeb
 ## 快速开始（3 分钟上手）
 下面是快速体验模板的最小步骤。模板默认使用 PostgreSQL（Npgsql），并通过 `Program.cs` 中的 AddNpgsql 注册 DbContext。
 
-1) 克隆并切换到模板目录
+1) 构建解决方案
 
 ```powershell
-cd src/StandardWeb
-dotnet restore
+dotnet build
 ```
 
-2) 构建解决方案
-
-```powershell
-dotnet build StandardWeb.sln
-```
-
-3) 配置（开发环境）
+2) 配置（开发环境）
 
 - 在 `StandardWeb.Web/appsettings.Development.json` 或环境变量中设置：
     - `ConnectionStrings:DefaultConnection` → PostgreSQL 连接字符串
@@ -56,7 +53,7 @@ dotnet build StandardWeb.sln
     - `AllowedOrigins` → 用于 CORS，逗号分隔，支持 `https://*.example.com` 通配
 - 在 `tools\EfCoreMigrationApp\appsettings.json` 中配置数据库连接字符串用于数据库生成和迁移
 
-4) 应用 EF Core 迁移并初始化数据库
+3) 应用 EF Core 迁移并初始化数据库
 
 ```powershell
 cd tools\EfCoreMigrationApp
@@ -64,11 +61,11 @@ dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-5) 运行项目
+4) 运行项目
 
 - 启动 `StandardWeb.Web` 项目
 
-6) 查看运行效果（开发时）
+5) 查看运行效果（开发时）
 
 在开发环境运行时，会默认启用 OpenAPI/Scalar 文档（Program.cs 中控制）；当运行`StandardWeb.Web`后，默认会跳转到 `http://localhost:<port>/scalar/v1` 来查看接口和参考文档。
 
@@ -136,8 +133,8 @@ public async Task<OperationResult<UserDto?>> RegisterAsync(UserRegistrationDto d
 Providers路径用于放置各种职责单一或者与外界交互的服务类，例如发送邮件、生成 JWT Token、Azure Client 等。Application 层下的Service通过协调这些Providers来完成一项完整的业务逻辑。
 
 ## 扩展一个业务模块（建议流程）
-1. 在 `StandardWeb.Domain` 中定义实体、聚合及仓储接口等领域对象；
-2. 在 `StandardWeb.Domain` 添加仓储实现，并且在`AppDbContext`中注册和配置EFCore实体；
+1. 在 `StandardWeb.Domain` 中定义实体、聚合及仓储接口等领域对象（保持技术无关）；
+2. 在 `StandardWeb.EFCore/Repositories/` 添加仓储实现，并且在 `AppDbContext` 中配置 EF Core 实体映射；
 3. 在 `StandardWeb.Application/Services/<模块名>` 实现业务逻辑（Use-cases），并在 Application 层编写 AutoMapper Profile；
 4. 在`StandardWeb.Application\ErrorCodes`中定义错误码；（如果需要）
 5. 在`StandardWeb.Contracts`中定义跨服务共享的 DTO 和接口；（如果需要）
@@ -180,12 +177,12 @@ public class InventoryController : BaseApiController
 MiCake提供了很多非常实用的功能，可以最大化的避免重复造轮子，提升开发效率。建议直接使用MiCake所提供的功能来实现常见需求。
 
 #### 分页查询和动态查询
-分页查询通常会在现代Web项目中经常被使用。当仓储接口继承自`IRepositoryHasPagingQuery`时，会提供分页查询的功能。可以直接使用`PagingQueryAsync`和`CommonFilterPagingQueryAsync`来实现分页查询和动态查询的功能：
-当一个DTO对象实现了`IDynamicQueryObj`接口时，可以直接使用`GenerateFilterGroup`方法来生成动态查询条件。例如：
+分页查询通常会在现代Web项目中经常被使用。当仓储接口继承自`IRepositoryHasPagingQuery`时，会提供分页查询的功能。可以直接使用`FilterQueryAsync`和`FilterPagingQueryAsync`来实现分页查询和动态查询的功能：
+当一个DTO对象实现了`IDynamicQueryModel`接口时，可以直接使用`GenerateFilterGroup`方法来生成动态查询条件。例如：
 
 ```csharp
 [DynamicFilterJoin(JoinType = FilterJoinType.And)]
-public class QueryUserListDto : IDynamicQueryObj
+public class QueryUserListDto : IDynamicQueryModel
 {
     [DynamicFilter(OperatorType = ValueOperatorType.StartsWith)]
     public string? PhoneNumber { get; set; }
@@ -196,7 +193,7 @@ public class QueryUserListDto : IDynamicQueryObj
 
 // QueryUserListDto 会生成对应的动态查询条件： PhoneNumber.StartsWith(value) AND Status == UserStatus.Active 交给EFCore处理
 
-var pagedUsers = await _userRepo.CommonFilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
+var pagedUsers = await _userRepo.FilterPagingQueryAsync(new PagingRequest(pageIndex, pageSize), query.GenerateFilterGroup());
 ```
 
-通常简单的条件过滤可以使用`IDynamicQueryObj`的方式来实现，如果有更复杂的查询条件，可以选择手动构建`FilterGroup`或者`CompositeFilterGroup`对象来实现动态查询条件的构建。具体可以参考 MiCake 文档。
+通常简单的条件过滤可以使用`IDynamicQueryModel`的方式来实现，如果有更复杂的查询条件，可以选择手动构建`FilterGroup`或者`CompositeFilterGroup`对象来实现动态查询条件的构建。具体可以参考 MiCake 文档。

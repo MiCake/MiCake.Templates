@@ -1,7 +1,6 @@
 using AutoMapper;
 using MiCake.AspNetCore.Responses;
 using MiCake.Core.DependencyInjection;
-using MiCake.Util.Query.Paging;
 using Microsoft.AspNetCore.Mvc;
 using StandardWeb.Common.Helpers;
 
@@ -28,7 +27,7 @@ namespace CommonWebLib
         /// <summary>
         /// Logger instance for the base controller.
         /// </summary>
-        protected ILogger<BaseApiController> BaseLogger { get; }
+        protected ILogger<BaseApiController> Logger { get; }
 
         /// <summary>
         /// Initializes the base controller with required infrastructure services.
@@ -37,7 +36,7 @@ namespace CommonWebLib
         public BaseApiController(InfrastructureTools infrastructureTools)
         {
             InfrastructureTools = infrastructureTools;
-            BaseLogger = infrastructureTools.LoggerFactory.CreateLogger<BaseApiController>();
+            Logger = infrastructureTools.LoggerFactory.CreateLogger<BaseApiController>();
         }
 
         private InfrastructureTools InfrastructureTools { get; }

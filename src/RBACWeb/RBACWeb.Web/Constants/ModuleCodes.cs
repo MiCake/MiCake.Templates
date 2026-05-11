@@ -1,0 +1,28 @@
+namespace RBACWeb.Web.Constants;
+
+/// <summary>
+/// Module code prefixes for error code categorization.
+/// Each module has a unique two-digit identifier that prefixes error codes.
+/// </summary>
+public static class ModuleCodes
+{
+    /// <summary>
+    /// Authentication and authorization module (login, token refresh)
+    /// </summary>
+    public const string AuthModule = "01";
+
+    /// <summary>
+    /// User management module (registration, profile updates)
+    /// </summary>
+    public const string UserManagementModule = "02";
+
+    /// <summary>
+    /// Configuration management module (dynamic application settings)
+    /// </summary>
+    public const string ConfigurationModule = "05";
+
+    /// <summary>
+    /// Authorization module (RBAC: roles, permissions, resources, data scopes)
+    /// </summary>
+    public const string AuthorizationModule = "06";
+}

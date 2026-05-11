@@ -1,0 +1,154 @@
+using System.ComponentModel.DataAnnotations;
+using RBACWeb.Common.Time;
+using RBACWeb.Domain.Enums.Identity;
+
+namespace RBACWeb.Domain.Models.Identity;
+
+/// <summary>
+/// External login provider entity for third-party authentication (WeChat, Alipay, Apple, etc.)
+/// </summary>
+public class ExternalLoginProvider : AuditEntity
+{
+    public long UserId { get; private set; }
+
+    /// <summary>
+    /// Login provider type (WeChat, Alipay, Apple, etc.)
+    /// </summary>
+    public LoginProviderType ProviderType { get; private set; }
+
+    /// <summary>
+    /// Provider's unique user identifier (e.g., WeChat OpenId, Alipay UserId)
+    /// </summary>
+    [MaxLength(200)]
+    [Required]
+    public string ProviderKey { get; private set; } = null!;
+
+    /// <summary>
+    /// Provider's global user identifier (e.g., WeChat UnionId, optional)
+    /// </summary>
+    [MaxLength(200)]
+    public string? ProviderUnionId { get; private set; }
+
+    /// <summary>
+    /// User's nickname from third-party platform
+    /// </summary>
+    [MaxLength(100)]
+    public string? NickName { get; private set; }
+
+    /// <summary>
+    /// User's avatar URL from third-party platform
+    /// </summary>
+    [MaxLength(500)]
+    public string? AvatarUrl { get; private set; }
+
+    /// <summary>
+    /// Extended data from provider (JSON format)
+    /// e.g., gender, city, language, etc.
+    /// </summary>
+    [MaxLength(2000)]
+    public string? ExtendedData { get; private set; }
+
+    /// <summary>
+    /// First bind time
+    /// </summary>
+    public DateTimeOffset BindTime { get; private set; }
+
+    /// <summary>
+    /// Last login time
+    /// </summary>
+    public DateTimeOffset? LastLoginTime { get; private set; }
+
+    /// <summary>
+    /// Whether the account is unbound
+    /// </summary>
+    public bool IsUnbound { get; private set; }
+
+    /// <summary>
+    /// Unbind time
+    /// </summary>
+    public DateTimeOffset? UnboundTime { get; private set; }
+
+
+    #region Navigation Properties
+
+    public User User { get; private set; } = null!;
+
+    #endregion
+
+    protected ExternalLoginProvider() { }
+
+    public static ExternalLoginProvider Create(
+        LoginProviderType providerType,
+        string providerKey,
+        string? providerUnionId = null,
+        string? nickName = null,
+        string? avatarUrl = null)
+    {
+        if (string.IsNullOrWhiteSpace(providerKey))
+            throw new ArgumentException("Provider key cannot be empty", nameof(providerKey));
+
+        return new ExternalLoginProvider
+        {
+            ProviderType = providerType,
+            ProviderKey = providerKey,
+            ProviderUnionId = providerUnionId,
+            NickName = nickName,
+            AvatarUrl = avatarUrl,
+            BindTime = TimeNow.Now,
+            IsUnbound = false
+        };
+    }
+
+    /// <summary>
+    /// Update user profile information (nickname, avatar, etc.)
+    /// </summary>
+    public void UpdateUserProfile(string? nickName, string? avatarUrl, string? extendedData = null)
+    {
+        NickName = nickName;
+        AvatarUrl = avatarUrl;
+
+        if (!string.IsNullOrWhiteSpace(extendedData))
+        {
+            ExtendedData = extendedData;
+        }
+    }
+
+    /// <summary>
+    /// Record login activity
+    /// </summary>
+    public void RecordLogin()
+    {
+        LastLoginTime = TimeNow.Now;
+    }
+
+    /// <summary>
+    /// Unbind the external account
+    /// </summary>
+    public void Unbind()
+    {
+        if (IsUnbound)
+            throw new InvalidOperationException("Already unbound");
+
+        IsUnbound = true;
+        UnboundTime = TimeNow.Now;
+    }
+
+    /// <summary>
+    /// Rebind (can rebind after unbinding)
+    /// </summary>
+    public void Rebind()
+    {
+        if (!IsUnbound)
+            throw new InvalidOperationException("Not in unbound state");
+
+        IsUnbound = false;
+        BindTime = TimeNow.Now;
+        LastLoginTime = TimeNow.Now;
+        UnboundTime = null;
+    }
+
+    public void SetUser(User user)
+    {
+        UserId = user.Id;
+    }
+}

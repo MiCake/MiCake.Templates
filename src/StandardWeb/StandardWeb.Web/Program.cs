@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
-using StandardWeb.Domain;
 using StandardWeb.Web;
 using StandardWeb.Web.StartUp;
 using MiCake.Core;
 using StandardWeb.Common.Time;
+using StandardWeb.EFCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +27,10 @@ try
     builder.Services.AddMiCakeWithDefault<WebModule, AppDbContext>(
         opt =>
         {
-            opt.AuditConfig = audit =>
+            opt.AspNetConfig = asp =>
             {
-                audit.AuditTimeProvider = () => TimeNow.Now;
+                // Enable MiCake's API logging feature
+                asp.UseApiLogging = true;
             };
         }
     ).Build();
