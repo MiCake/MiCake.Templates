@@ -112,7 +112,7 @@ public class PermissionController : BaseApiController
     }
 
     /// <summary>
-    /// Deletes a permission.
+    /// Soft-deletes a permission.
     /// </summary>
     /// <param name="id">Permission ID</param>
     [HttpDelete("{id}")]

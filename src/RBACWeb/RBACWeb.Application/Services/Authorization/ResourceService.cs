@@ -96,8 +96,7 @@ public class ResourceService
             dto.ParentId,
             dto.SortOrder);
 
-        await _resourceRepo.AddAsync(resource, cancellationToken);
-        await _resourceRepo.SaveChangesAsync(cancellationToken);
+        await _resourceRepo.AddAndGetIdAsync(resource, cancellationToken);
 
         _logger.LogInformation("Resource {ResourceId} created successfully", resource.Id);
         return OperationResult<ResourceDto?>.Success(_mapper.Map<ResourceDto>(resource));
@@ -113,7 +112,6 @@ public class ResourceService
             return OperationResult<ResourceDto?>.Failure("Resource not found", AuthorizationErrorCodes.ResourceNotFound);
 
         resource.Update(dto.Name, dto.Description, dto.Path, dto.SortOrder);
-        await _resourceRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Resource {ResourceId} updated successfully", id);
         return OperationResult<ResourceDto?>.Success(_mapper.Map<ResourceDto>(resource));
@@ -129,7 +127,6 @@ public class ResourceService
             return OperationResult.Failure("Resource not found", AuthorizationErrorCodes.ResourceNotFound);
 
         resource.Deactivate();
-        await _resourceRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Resource {ResourceId} deactivated successfully", id);
         return OperationResult.Success();

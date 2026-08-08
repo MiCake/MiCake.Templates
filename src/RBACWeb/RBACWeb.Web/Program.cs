@@ -31,10 +31,6 @@ try
                 // Enable MiCake's API logging feature
                 asp.UseApiLogging = true;
             };
-            opt.EFCoreConfig = ef =>
-            {
-                ef.BypassUnitOfWorkCheck = true;
-            };
         }
     ).Build();
 

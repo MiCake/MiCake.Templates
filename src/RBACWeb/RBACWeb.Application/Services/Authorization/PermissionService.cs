@@ -84,8 +84,7 @@ public class PermissionService
 
         var permission = Permission.Create(dto.Code, dto.Name, dto.ResourceId, (DomainPermissionAction)dto.Action, dto.Description);
 
-        await _permissionRepo.AddAsync(permission, cancellationToken);
-        await _permissionRepo.SaveChangesAsync(cancellationToken);
+        await _permissionRepo.AddAndGetIdAsync(permission, cancellationToken);
 
         _logger.LogInformation("Permission {PermissionId} created successfully", permission.Id);
         return OperationResult<PermissionDto?>.Success(_mapper.Map<PermissionDto>(permission));
@@ -101,7 +100,6 @@ public class PermissionService
             return OperationResult<PermissionDto?>.Failure("Permission not found", AuthorizationErrorCodes.PermissionNotFound);
 
         permission.Update(dto.Name, dto.Description);
-        await _permissionRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Permission {PermissionId} updated successfully", id);
         return OperationResult<PermissionDto?>.Success(_mapper.Map<PermissionDto>(permission));
@@ -117,7 +115,6 @@ public class PermissionService
             return OperationResult.Failure("Permission not found", AuthorizationErrorCodes.PermissionNotFound);
 
         permission.Deactivate();
-        await _permissionRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Permission {PermissionId} deactivated successfully", id);
         return OperationResult.Success();

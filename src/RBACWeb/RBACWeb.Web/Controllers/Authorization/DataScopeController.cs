@@ -95,7 +95,7 @@ public class DataScopeController : BaseApiController
     }
 
     /// <summary>
-    /// Deletes a data scope.
+    /// Soft-deletes a data scope.
     /// </summary>
     /// <param name="id">Data scope ID</param>
     [HttpDelete("{id}")]

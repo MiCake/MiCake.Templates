@@ -97,7 +97,6 @@ public class UserRoleService
             return OperationResult.Failure("Role already assigned to user", AuthorizationErrorCodes.UserRoleAlreadyAssigned);
 
         user.AssignRole(dto.RoleId, dto.ExpiresAt);
-        await _userRepo.SaveChangesAsync(cancellationToken);
 
         // Invalidate cache
         await _permissionChecker.InvalidateUserCacheAsync(userId);
@@ -126,7 +125,6 @@ public class UserRoleService
             return OperationResult.Failure("Role not assigned to user", AuthorizationErrorCodes.UserRoleNotFound);
 
         user.RemoveRole(roleId);
-        await _userRepo.SaveChangesAsync(cancellationToken);
 
         // Invalidate cache
         await _permissionChecker.InvalidateUserCacheAsync(userId);

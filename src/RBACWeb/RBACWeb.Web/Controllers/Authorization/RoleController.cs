@@ -95,7 +95,7 @@ public class RoleController : BaseApiController
     }
 
     /// <summary>
-    /// Deletes a role.
+    /// Soft-deletes a role.
     /// </summary>
     /// <param name="id">Role ID</param>
     [HttpDelete("{id}")]

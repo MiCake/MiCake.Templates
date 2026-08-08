@@ -68,8 +68,7 @@ public class RoleService
 
         var role = Role.Create(dto.Name, dto.Description);
 
-        await _roleRepo.AddAsync(role, cancellationToken);
-        await _roleRepo.SaveChangesAsync(cancellationToken);
+        await _roleRepo.AddAndGetIdAsync(role, cancellationToken);
 
         _logger.LogInformation("Role {RoleId} created successfully", role.Id);
         return OperationResult<RoleDto?>.Success(_mapper.Map<RoleDto>(role));
@@ -85,7 +84,6 @@ public class RoleService
             return OperationResult<RoleDto?>.Failure("Role not found", AuthorizationErrorCodes.RoleNotFound);
 
         role.Update(dto.Name, dto.Description);
-        await _roleRepo.SaveChangesAsync(cancellationToken);
 
         // Invalidate cache
         await _permissionChecker.InvalidateRoleCacheAsync(id);
@@ -95,7 +93,7 @@ public class RoleService
     }
 
     /// <summary>
-    /// Deletes a role.
+    /// Soft-deletes a role by deactivating it.
     /// </summary>
     public async Task<OperationResult> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -107,7 +105,6 @@ public class RoleService
             return OperationResult.Failure("Cannot delete system role", AuthorizationErrorCodes.RoleIsSystem);
 
         role.Deactivate();
-        await _roleRepo.SaveChangesAsync(cancellationToken);
 
         // Invalidate cache
         await _permissionChecker.InvalidateRoleCacheAsync(id);
@@ -148,8 +145,6 @@ public class RoleService
             role.AddPermission(permissionId);
         }
 
-        await _roleRepo.SaveChangesAsync(cancellationToken);
-
         // Invalidate cache
         await _permissionChecker.InvalidateRoleCacheAsync(roleId);
 
@@ -188,8 +183,6 @@ public class RoleService
         {
             role.AddDataScope(dataScopeId);
         }
-
-        await _roleRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Data scopes assigned to role {RoleId}", roleId);
         return OperationResult.Success();

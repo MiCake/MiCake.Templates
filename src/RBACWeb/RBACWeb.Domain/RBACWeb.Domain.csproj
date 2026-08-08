@@ -4,7 +4,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MiCake" Version="10.0.0" />
+    <PackageReference Include="MiCake" Version="11.0.0-preview.2608081400" />
   </ItemGroup>
   
   <ItemGroup>

@@ -88,12 +88,7 @@ public class AuthService : BaseLoginService
 
         newUser.UpdateProfile(PersonalInfo.Create(data.FirstName, data.LastName, data.DisplayName));
 
-        await UserRepo.AddAsync(newUser, ct);
-        var result = await UserRepo.SaveChangesAsync(ct);
-        if (result < 0)
-        {
-            return OperationResult<UserDto?>.Failure("Failed to register user.", BaseErrorCodes.InternalError);
-        }
+        await UserRepo.AddAndGetIdAsync(newUser, ct);
 
         Logger.LogInformation("User {UserId} registered successfully", newUser.Id);
         return OperationResult<UserDto?>.Success(Mapper.Map<User, UserDto>(newUser));
@@ -161,7 +156,6 @@ public class AuthService : BaseLoginService
 
         // Generate JWT access and refresh tokens
         var tokenResult = await GenerateJwtTokenAsync(user, ct);
-        await UserRepo.SaveChangesAsync(ct);
 
         var loginResult = CreateLoginResult(user, tokenResult);
 

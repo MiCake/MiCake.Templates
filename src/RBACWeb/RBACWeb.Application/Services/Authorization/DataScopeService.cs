@@ -69,8 +69,7 @@ public class DataScopeService
             dto.Condition,
             dto.Priority);
 
-        await _dataScopeRepo.AddAsync(dataScope, cancellationToken);
-        await _dataScopeRepo.SaveChangesAsync(cancellationToken);
+        await _dataScopeRepo.AddAndGetIdAsync(dataScope, cancellationToken);
 
         _logger.LogInformation("Data scope {DataScopeId} created successfully", dataScope.Id);
         return OperationResult<DataScopeDto?>.Success(_mapper.Map<DataScopeDto>(dataScope));
@@ -86,7 +85,6 @@ public class DataScopeService
             return OperationResult<DataScopeDto?>.Failure("Data scope not found", AuthorizationErrorCodes.DataScopeNotFound);
 
         dataScope.Update(dto.Name, dto.Description, dto.Condition, dto.Priority);
-        await _dataScopeRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Data scope {DataScopeId} updated successfully", id);
         return OperationResult<DataScopeDto?>.Success(_mapper.Map<DataScopeDto>(dataScope));
@@ -102,7 +100,6 @@ public class DataScopeService
             return OperationResult.Failure("Data scope not found", AuthorizationErrorCodes.DataScopeNotFound);
 
         dataScope.Deactivate();
-        await _dataScopeRepo.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Data scope {DataScopeId} deactivated successfully", id);
         return OperationResult.Success();

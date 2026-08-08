@@ -116,10 +116,10 @@ public abstract class BaseLoginService
     /// <summary>
     /// Handles failed login attempt by incrementing access failed count
     /// </summary>
-    protected async Task HandleFailedLoginAttemptAsync(User user, CancellationToken cancellationToken = default)
+    protected Task HandleFailedLoginAttemptAsync(User user, CancellationToken cancellationToken = default)
     {
         user.IncrementAccessFailedCount();
-        await UserRepo.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     /// <summary>
