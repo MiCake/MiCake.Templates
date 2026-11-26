@@ -3,7 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RBACWeb.Domain\RBACWeb.Domain.csproj" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0" />
-    <PackageReference Include="MiCake.EntityFrameworkCore" Version="11.0.0-preview.2611260249" />
+    <PackageReference Include="MiCake.EntityFrameworkCore" Version="11.0.0" />
   </ItemGroup>
 
 </Project>

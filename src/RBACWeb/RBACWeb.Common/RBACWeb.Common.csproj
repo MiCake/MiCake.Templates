@@ -8,7 +8,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.1" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.4" />
-    <PackageReference Include="MiCake.Core" Version="11.0.0-preview.2611260249" />
+    <PackageReference Include="MiCake.Core" Version="11.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="11.0.0" />
   </ItemGroup>
 </Project>
