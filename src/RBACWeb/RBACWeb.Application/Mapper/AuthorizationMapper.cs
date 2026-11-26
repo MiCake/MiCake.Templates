@@ -1,36 +1,36 @@
-using AutoMapper;
+using Mapster;
 using RBACWeb.Contracts.Dtos.Authorization;
 using RBACWeb.Domain.Models.Authorization;
 using RBACWeb.Domain.Models.Identity;
 
 namespace RBACWeb.Application.Mapper;
 
-public class AuthorizationMapper : Profile
+public class AuthorizationMapper : IRegister
 {
-    public AuthorizationMapper()
+    public void Register(TypeAdapterConfig config)
     {
         // Role mappings
-        CreateMap<Role, RoleDto>();
-        CreateMap<Role, RoleDetailDto>()
-            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src =>
-                src.RolePermissions.Where(rp => rp.IsGranted).Select(rp => rp.Permission)))
-            .ForMember(dest => dest.DataScopes, opt => opt.MapFrom(src =>
-                src.RoleDataScopes.Select(rds => rds.DataScope)));
+        config.NewConfig<Role, RoleDto>();
+        config.NewConfig<Role, RoleDetailDto>()
+            .Map(dest => dest.Permissions, src =>
+                src.RolePermissions.Where(rp => rp.IsGranted).Select(rp => rp.Permission))
+            .Map(dest => dest.DataScopes, src =>
+                src.RoleDataScopes.Select(rds => rds.DataScope));
 
         // Permission mappings
-        CreateMap<Permission, PermissionDto>()
-            .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.Resource != null ? src.Resource.Name : null));
+        config.NewConfig<Permission, PermissionDto>()
+            .Map(dest => dest.ResourceName, src => src.Resource != null ? src.Resource.Name : null);
 
         // Resource mappings
-        CreateMap<Resource, ResourceDto>();
-        CreateMap<Resource, ResourceTreeDto>()
-            .ForMember(dest => dest.Children, opt => opt.MapFrom(src => src.Children));
+        config.NewConfig<Resource, ResourceDto>();
+        config.NewConfig<Resource, ResourceTreeDto>()
+            .Map(dest => dest.Children, src => src.Children);
 
         // DataScope mappings
-        CreateMap<DataScope, DataScopeDto>();
+        config.NewConfig<DataScope, DataScopeDto>();
 
         // UserRole mappings
-        CreateMap<UserRole, UserRoleDto>()
-            .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
+        config.NewConfig<UserRole, UserRoleDto>()
+            .Map(dest => dest.RoleName, src => src.Role.Name);
     }
 }

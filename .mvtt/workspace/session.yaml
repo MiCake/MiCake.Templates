@@ -1,36 +1,64 @@
 session:
-  initialized_at: ""
+  initialized_at: 2026-11-26T03:14:40.581Z
   last_synced_at: ""
-
 active_epic:
   id: ""
   title: ""
   created_at: ""
   epic_path: ""
-
 epics: []
-  # - id: "epic-20260608-ecommerce-platform"
-  #   title: "ecommerce platform"
-  #   epic_path: ".mvtt/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"
-  #   status: "active"   # active | done | abandoned
-  #   updated_at: "..."
-
 active_change:
-  id: ""
-  title: ""
-  created_at: ""
-  plan_path: ""
-  epic_id: ""            # epic parent id or empty
-
-changes: []
-  # - id: "chg-001"
-  #   title: "User authentication"
-  #   plan_path: ".mvtt/workspace/artifacts/chg-001/plan.yaml"
-  #   status: "active"           # active | done | abandoned
-  #   updated_at: "2026-05-23T14:30:00"
-
-history: []
-  # - skill: "/mvt-analyze"
-  #   completed_at: "2026-05-23T14:30:00"
-  #   summary: "Analyzed user authentication requirements"
-  #   change_id: ""   # set when work belongs to an active change
+  id: 20261126-automapper-to-mapster
+  title: Replace AutoMapper with Mapster
+  created_at: 2026-11-26T03:51:47.212Z
+  plan_path: .mvtt/workspace/artifacts/20261126-automapper-to-mapster/plan.yaml
+  epic_id: ""
+changes:
+  - id: 20261126-automapper-to-mapster
+    title: Replace AutoMapper with Mapster
+    plan_path: .mvtt/workspace/artifacts/20261126-automapper-to-mapster/plan.yaml
+    status: active
+    updated_at: 2026-11-26T04:18:11.367Z
+    epic_id: ""
+    created_at: 2026-11-26T03:51:47.212Z
+history:
+  - skill: /mvt-implement
+    completed_at: 2026-11-26T04:02:11.653Z
+    summary: 完成 t1：StandardWeb 由 AutoMapper 迁移到 Mapster 10.0.14，全量重建 0 错误 0 警告，AutoMapper 残留清零，W1/W2 闭环
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-update-plan
+    completed_at: 2026-11-26T04:07:04.569Z
+    summary: t1-standardweb-mapster-migration 标记为 done，计划推进到 t2（RBACWeb 迁移），进度 1/4
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-implement
+    completed_at: 2026-11-26T04:09:45.837Z
+    summary: 完成 t2：RBACWeb 迁移到 Mapster 10.0.14，AuthorizationMapper 7 组映射改写完成，全量重建 0 错误，AutoMapper 残留清零
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-update-plan
+    completed_at: 2026-11-26T04:10:55.394Z
+    summary: t2-rbacweb-mapster-migration 标记为 done，计划推进到 t3（映射回归测试），进度 2/4
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-test
+    completed_at: 2026-11-26T04:14:19.288Z
+    summary: 完成 t3：新增两套映射回归测试（8 个用例，含 EF InMemory 递归树与 IsGranted 过滤），双解决方案 134 个测试全部通过，闭合评审 W3/S3
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-update-plan
+    completed_at: 2026-11-26T04:18:11.367Z
+    summary: t3-mapping-behaviour-tests 按用户决定标记为 done（测试文件已撤销），计划推进到 t4，进度 3/4
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-review
+    completed_at: 2026-11-26T04:20:17.504Z
+    summary: 评审 AutoMapper→Mapster 全量改动：Approve with comments（0 Critical / 2 Warning：映射测试缺失、上下文未同步）
+    change_id: 20261126-automapper-to-mapster
+  - skill: /mvt-quick-dev
+    completed_at: 2026-11-26T06:09:27.919Z
+    summary: "B1 完成：core-api 升级到 .NET 11 + MiCake 新预览版，11 个 csproj/props 改动并修复集成测试 SDK，全量重建 0 错误；waived: cross-repo-edit"
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-11-26T06:18:21.864Z
+    summary: "B2 完成：core-api 迁移到 Mapster（11 个配置改写、34 个消费者、注册替换、删空配置），零残留，403 个单元测试通过；waived: cross-repo-edit, new-dependency"
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-11-26T06:26:19.326Z
+    summary: "B3 完成：core-api 固定 Newtonsoft.Json 13.0.4 消除高危漏洞，移除 3 个 net11 冗余包引用，NuGet 审计警告清零，403 个单元测试通过；waived: cross-repo-edit, new-dependency"
+    change_id: ""

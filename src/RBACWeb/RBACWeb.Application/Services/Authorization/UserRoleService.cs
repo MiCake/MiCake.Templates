@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using RBACWeb.Application.Authorization;
 using RBACWeb.Application.ErrorCodes;

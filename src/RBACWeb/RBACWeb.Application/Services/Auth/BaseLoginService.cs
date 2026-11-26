@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using RBACWeb.Application.ErrorCodes;
 using RBACWeb.Application.Providers;
 using RBACWeb.Common.Auth;

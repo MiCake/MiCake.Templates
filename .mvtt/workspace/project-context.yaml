@@ -1,12 +1,38 @@
-# Project Context Index
 projects:
-  - name: "default"                 # Project identifier (unique within workspace)
-    path: "."                       # Relative path from repo root
-    type: ""                        # web-frontend,api-service,etc.
-    source_paths: []
+  - name: "StandardWeb"
+    path: "src/StandardWeb"
+    type: "api-service"
+    source_paths:
+      - "src/StandardWeb/StandardWeb.Common"
+      - "src/StandardWeb/StandardWeb.Contracts"
+      - "src/StandardWeb/StandardWeb.Domain"
+      - "src/StandardWeb/StandardWeb.EFCore"
+      - "src/StandardWeb/StandardWeb.Application"
+      - "src/StandardWeb/StandardWeb.Web"
+      - "src/StandardWeb/tests"
+      - "src/StandardWeb/tools"
     tech_stack:
-      primary_language: ""
+      primary_language: "C#"
       secondary_languages: []
-      framework: ""
-      build_tool: ""
-      test_framework: ""
+      framework: "ASP.NET Core Web API + MiCake DDD (EF Core / Npgsql, AutoMapper, FluentValidation, Serilog, Scalar, JwtBearer)"
+      build_tool: "dotnet CLI (MSBuild) / StandardWeb.sln"
+      test_framework: "xUnit + Moq + coverlet"
+
+  - name: "RBACWeb"
+    path: "src/RBACWeb"
+    type: "api-service"
+    source_paths:
+      - "src/RBACWeb/RBACWeb.Common"
+      - "src/RBACWeb/RBACWeb.Contracts"
+      - "src/RBACWeb/RBACWeb.Domain"
+      - "src/RBACWeb/RBACWeb.EFCore"
+      - "src/RBACWeb/RBACWeb.Application"
+      - "src/RBACWeb/RBACWeb.Web"
+      - "src/RBACWeb/tests"
+      - "src/RBACWeb/tools"
+    tech_stack:
+      primary_language: "C#"
+      secondary_languages: []
+      framework: "ASP.NET Core Web API + MiCake DDD with RBAC (EF Core, FluentValidation, Serilog, Scalar, JwtBearer)"
+      build_tool: "dotnet CLI (MSBuild) / RBACWeb.sln"
+      test_framework: "xUnit + Moq"

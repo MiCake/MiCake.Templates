@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using StandardWeb.Application.ErrorCodes;
 using StandardWeb.Application.Providers;
 using StandardWeb.Common.Auth;

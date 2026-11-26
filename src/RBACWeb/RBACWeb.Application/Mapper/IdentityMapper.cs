@@ -1,16 +1,16 @@
-using AutoMapper;
+using Mapster;
 using RBACWeb.Contracts.Dtos.Identity;
 using RBACWeb.Domain.Models.Identity;
 
 namespace RBACWeb.Application.Mapper;
 
-public class IdentityMapper : Profile
+public class IdentityMapper : IRegister
 {
-    public IdentityMapper()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<User, UserDto>()
-            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Profile.FirstName))
-            .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.Profile.LastName))
-            .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.Profile.DisplayName));
+        config.NewConfig<User, UserDto>()
+            .Map(dest => dest.FirstName, src => src.Profile.FirstName)
+            .Map(dest => dest.LastName, src => src.Profile.LastName)
+            .Map(dest => dest.DisplayName, src => src.Profile.DisplayName);
     }
 }

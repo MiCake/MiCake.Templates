@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using StandardWeb.Application.ErrorCodes;
 using StandardWeb.Application.Providers;

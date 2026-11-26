@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Mapster;
 using StandardWeb.Application;
 
 namespace StandardWeb.Web.StartUp;
@@ -17,11 +18,8 @@ public static class WebServiceRegistration
         services.AddControllers();
 
         services.AddOpenApi();
-        services.AddAutoMapper(cfg =>
-        {
-            cfg.AddMaps(typeof(WebModule).Assembly);
-            cfg.AddMaps(typeof(ApplicationModule).Assembly);
-        });
+        services.AddMapster();
+        TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationModule).Assembly);
         services.AddValidatorsFromAssembly(typeof(WebModule).Assembly);
         services.AddFluentValidationAutoValidation();
         services.AddFluentValidationClientsideAdapters();
