@@ -111,7 +111,7 @@ public class ResourceController : BaseApiController
     }
 
     /// <summary>
-    /// Deletes a resource.
+    /// Soft-deletes a resource.
     /// </summary>
     /// <param name="id">Resource ID</param>
     [HttpDelete("{id}")]

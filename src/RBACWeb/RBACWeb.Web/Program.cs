@@ -18,7 +18,7 @@ try
     Log.Information("Starting web application");
     builder.Host.UseSerilog();
 
-    // Register core API services: controllers, validation, AutoMapper, OpenAPI
+    // Register core API services: controllers, validation, mapping, OpenAPI
     builder.Services.AddWebApiDefaults(builder.Configuration);
     builder.Services.AddNpgsql<AppDbContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
 
@@ -30,10 +30,6 @@ try
             {
                 // Enable MiCake's API logging feature
                 asp.UseApiLogging = true;
-            };
-            opt.EFCoreConfig = ef =>
-            {
-                ef.BypassUnitOfWorkCheck = true;
             };
         }
     ).Build();

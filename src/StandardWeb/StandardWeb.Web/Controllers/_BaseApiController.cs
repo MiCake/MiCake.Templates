@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using MiCake.AspNetCore.Responses;
 using MiCake.Core.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +42,7 @@ namespace CommonWebLib
         private InfrastructureTools InfrastructureTools { get; }
 
         /// <summary>
-        /// AutoMapper instance for DTO conversions.
+        /// Mapper instance for DTO conversions.
         /// </summary>
         public IMapper Mapper => InfrastructureTools.Mapper;
 
@@ -138,7 +138,7 @@ namespace CommonWebLib
     public class InfrastructureTools(IMapper mapper, ILoggerFactory loggerFactory)
     {
         /// <summary>
-        /// AutoMapper instance for object-to-object mapping.
+        /// Mapper instance for object-to-object mapping.
         /// </summary>
         public IMapper Mapper { get; set; } = mapper;
 

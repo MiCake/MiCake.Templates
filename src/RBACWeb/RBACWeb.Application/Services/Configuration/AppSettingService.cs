@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using MiCake.Util.Convert;
 using Microsoft.Extensions.Configuration;
 using RBACWeb.Application.Cache;
